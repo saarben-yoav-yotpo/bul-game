@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>קול קורא</title>
+<meta name="description" content="משחק חיקויים: שומעים קטע, שרים למיקרופון, ומקבלים ציון כמה זה דומה.">
+<meta property="og:title" content="קול קורא 🎤 כמה אתם נשמעים כמוהם?">
+<meta property="og:description" content="שומעים קטע, שרים למיקרופון, ומקבלים ציון על מנגינה, קצב ודמיון קול.">
+<meta name="theme-color" content="#170d1c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;800&family=Secular+One&display=swap">
+<style>
+/* Layout: full-screen vertical snap cards (TikTok), one challenge per screen; party mode is a step-by-step stage. Single deliberate dark "stage" look. */
+:root{
+  --stage:#170d1c; --curtain:#24112a; --spot:#ffc94d; --voice:#ff5d8f; --target:#6fe3d4;
+  --ink:#fbf3e6; --muted:#bfaec3; --line:rgba(251,243,230,.14); --glass:rgba(23,13,28,.55);
+  --display:"Secular One","Assistant",system-ui,sans-serif; --body:"Assistant",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--stage);color:var(--ink);font-family:var(--body);font-size:16px;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--spot);outline-offset:3px}
+[hidden]{display:none!important}
+
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+.topbar{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to bottom,rgba(23,13,28,.85),rgba(23,13,28,0))}
+.logo{font-family:var(--display);font-size:22px;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.logo i{width:10px;height:10px;border-radius:50%;background:var(--voice);box-shadow:0 0 12px var(--voice);display:inline-block}
+.tabs{display:flex;background:rgba(255,255,255,.08);border-radius:999px;padding:3px}
+.tabs button{padding:6px 14px;border-radius:999px;font-weight:700;font-size:15px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--stage)}
+
+/* challenge feed */
+.feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.card{position:relative;height:100%;min-height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:calc(env(safe-area-inset-top,0px) + 64px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 22px) max(16px,env(safe-area-inset-left,0px));
+  background:radial-gradient(120% 60% at 50% 0%,var(--tint) 0%,transparent 70%),radial-gradient(80% 50% at 50% 115%,rgba(255,201,77,.18),transparent 70%),var(--stage)}
+.card .beam{position:absolute;top:-10%;left:50%;width:140%;height:80%;transform:translateX(-50%);pointer-events:none;
+  background:conic-gradient(from 160deg at 50% 0%,transparent 0deg,rgba(255,240,200,.07) 20deg,transparent 40deg);}
+.cardInner{position:relative;display:flex;flex-direction:column;gap:14px;max-width:560px;width:100%;margin:0 auto;min-width:0;padding-left:64px}
+.meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{font-size:13px;font-weight:800;letter-spacing:.4px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.12)}
+.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+h2.title{font-family:var(--display);font-weight:400;font-size:clamp(30px,8.5vw,46px);line-height:1.02;margin:0;text-wrap:balance}
+.artist{color:var(--muted);font-size:16px;margin-top:-8px}
+.roll{width:100%;height:170px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);display:block}
+.lyric{font-size:20px;font-weight:600;line-height:1.5;min-height:30px;unicode-bidi:plaintext}
+.lyric span{transition:color .1s}
+.lyric span.on{color:var(--spot);text-shadow:0 0 14px rgba(255,201,77,.5)}
+.lyric span.done{color:var(--ink)}
+.lyric span{color:rgba(251,243,230,.45)}
+.tip{font-size:14px;color:var(--muted);line-height:1.45}
+.controls{display:flex;align-items:center;gap:14px}
+.btnPlay{display:flex;align-items:center;gap:8px;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,.12);font-weight:800;font-size:16px;white-space:nowrap}
+.btnPlay svg{width:20px;height:20px}
+.btnMic{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 18px;border-radius:999px;background:var(--voice);color:#fff;font-weight:800;font-size:18px;
+  box-shadow:0 8px 30px rgba(255,93,143,.35);white-space:nowrap}
+.btnMic svg{width:22px;height:22px}
+.btnMic.rec{background:#fff;color:var(--voice);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,93,143,.6)}50%{box-shadow:0 0 0 14px rgba(255,93,143,0)}}
+.rail{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 120px);display:flex;flex-direction:column;gap:18px;align-items:center;z-index:2}
+.rail a,.rail button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--ink);text-decoration:none}
+.rail .ic{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center}
+.rail .ic svg{width:22px;height:22px}
+.rail .best{font-family:var(--display);font-size:18px;color:var(--spot)}
+.swipe{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 4px);left:0;right:0;text-align:center;font-size:12px;color:var(--muted);opacity:.7}
+.countdown{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:120px;color:var(--spot);pointer-events:none;text-shadow:0 0 40px rgba(255,201,77,.6);z-index:5}
+
+/* intro card */
+.intro .cardInner{justify-content:center;padding-left:0}
+.intro h1{font-family:var(--display);font-weight:400;font-size:clamp(46px,14vw,78px);line-height:.95;margin:0}
+.intro h1 em{font-style:normal;color:var(--voice)}
+.intro p{font-size:18px;line-height:1.5;margin:0;color:var(--ink);max-width:30ch}
+.steps{display:flex;flex-direction:column;gap:10px;margin:6px 0}
+.steps div{display:flex;gap:12px;align-items:center;font-size:16px}
+.steps b{font-family:var(--display);font-weight:400;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);color:var(--spot);flex:none}
+.cta{align-self:flex-start;padding:14px 22px;border-radius:999px;background:var(--spot);color:var(--stage);font-weight:800;font-size:17px}
+
+/* result sheet */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--curtain);border-radius:24px 24px 0 0;border-top:1px solid var(--line);
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 18px) max(16px,env(safe-area-inset-left,0px));
+  transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.9,.3,1.1);box-shadow:0 -20px 60px rgba(0,0,0,.5);max-height:92%;overflow-y:auto}
+.sheet.open{transform:none}
+.sheetIn{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto}
+.scoreRow{display:flex;align-items:center;gap:18px}
+.dial{position:relative;width:118px;height:118px;flex:none}
+.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dial .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:42px;font-variant-numeric:tabular-nums}
+.verdict{font-family:var(--display);font-size:28px;line-height:1.1;color:var(--spot)}
+.verdictSub{color:var(--muted);font-size:15px;margin-top:4px;line-height:1.4}
+.meters{display:flex;flex-direction:column;gap:10px}
+.meter{display:grid;grid-template-columns:92px 1fr 36px;align-items:center;gap:10px;font-size:15px;font-weight:600}
+.meter .bar{height:10px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}
+.meter .bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--target),var(--spot));width:0;transition:width .9s ease}
+.meter .v{text-align:left;font-variant-numeric:tabular-nums;color:var(--muted)}
+.sheetBtns{display:flex;gap:10px;flex-wrap:wrap}
+.sheetBtns button,.sheetBtns a{flex:1;min-width:120px;padding:13px 14px;border-radius:999px;font-weight:800;text-align:center;text-decoration:none;font-size:16px}
+.b1{background:var(--spot);color:var(--stage)}
+.b2{background:rgba(255,255,255,.12);color:var(--ink)}
+.b3{background:#25d366;color:#08301a}
+.msg{font-size:15px;line-height:1.5;color:var(--muted)}
+
+/* party */
+.party{flex:1;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 70px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 30px) max(16px,env(safe-area-inset-left,0px));
+  background:radial-gradient(100% 50% at 50% 0%,#5a1a4a 0%,transparent 70%),var(--stage)}
+.partyIn{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.party h2{font-family:var(--display);font-weight:400;font-size:clamp(32px,9vw,46px);margin:0;line-height:1}
+.party p{margin:0;line-height:1.5;font-size:16px;color:var(--muted)}
+.panel{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel h3{margin:0;font-size:18px;display:flex;align-items:center;gap:10px}
+.panel h3 b{font-family:var(--display);font-weight:400;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--spot);color:var(--stage);font-size:16px;flex:none}
+.field{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.field input{font:inherit;font-size:17px;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;padding:12px}
+.ideas{display:flex;gap:8px;flex-wrap:wrap}
+.ideas button{font-size:14px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--ink)}
+.board{display:flex;flex-direction:column;gap:8px}
+.board .row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06)}
+.board .row:first-child{background:rgba(255,201,77,.16)}
+.board .rk{font-family:var(--display);color:var(--spot)}
+.board .nm{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .sc{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.board .sub{grid-column:2/4;font-size:13px;color:var(--muted)}
+.linkish{color:var(--muted);text-decoration:underline;font-size:14px;align-self:flex-start}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 30px);transform:translateX(-50%);background:var(--ink);color:var(--stage);padding:10px 16px;border-radius:12px;font-weight:700;z-index:50;max-width:90%;text-align:center}
+@media (min-width:700px){ .rail{left:calc(50% - 360px)} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="logo"><i></i>קול קורא</div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabCh" aria-selected="true">אתגרים</button>
+      <button role="tab" id="tabParty" aria-selected="false">מסיבה</button>
+    </div>
+  </header>
+
+  <main class="feed" id="feed"></main>
+
+  <section class="party" id="party" hidden>
+    <div class="partyIn">
+      <h2>מצב מסיבה</h2>
+      <p>אחד שר, כולם מחקים. המשחק משווה כל אחד למקור: מנגינה, קצב, וכמה הקול שלכם דומה לקול שלו.</p>
+
+      <div class="panel" id="pStep1">
+        <h3><b>1</b>המקור</h3>
+        <label class="field">מי שר את המקור?
+          <input id="srcName" maxlength="20" placeholder="למשל: סער" autocomplete="off">
+        </label>
+        <div class="ideas" id="ideas"></div>
+        <canvas class="roll" id="srcRoll" width="600" height="170"></canvas>
+        <div class="controls">
+          <button class="btnPlay" id="srcPlay" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>השמעה</button>
+          <button class="btnMic" id="srcRec"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12z"/></svg><span>הקליטו מקור</span></button>
+        </div>
+        <p class="msg" id="srcMsg">שירו או אמרו משהו קצר, 3 עד 10 שניות. לחצו שוב כדי לעצור.</p>
+      </div>
+
+      <div class="panel" id="pStep2" hidden>
+        <h3><b>2</b>תורכם לחקות</h3>
+        <label class="field">שם המתחרה
+          <input id="plName" maxlength="20" placeholder="למשל: דנה" autocomplete="off">
+        </label>
+        <canvas class="roll" id="plRoll" width="600" height="170"></canvas>
+        <div class="controls">
+          <button class="btnPlay" id="plPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>שמעו מקור</button>
+          <button class="btnMic" id="plRec"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12z"/></svg><span>חקו עכשיו</span></button>
+        </div>
+        <p class="msg" id="plMsg">ההקלטה נעצרת לבד אחרי אורך המקור ועוד קצת.</p>
+      </div>
+
+      <div class="panel" id="pStep3" hidden>
+        <h3><b>3</b>טבלת המסיבה</h3>
+        <div class="board" id="board"></div>
+        <button class="linkish" id="newRound">סיבוב חדש עם מקור אחר</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="verdict">
+  <div class="sheetIn">
+    <div class="grab"></div>
+    <div class="scoreRow">
+      <div class="dial">
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="12"/>
+          <circle id="dialArc" cx="60" cy="60" r="52" fill="none" stroke="#ffc94d" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" style="transition:stroke-dashoffset 1s ease"/></svg>
+        <div class="num" id="dialNum">0</div>
+      </div>
+      <div>
+        <div class="verdict" id="verdict"></div>
+        <div class="verdictSub" id="verdictSub"></div>
+      </div>
+    </div>
+    <div class="meters" id="meters"></div>
+    <div class="sheetBtns">
+      <button class="b1" id="sAgain">עוד פעם</button>
+      <button class="b3" id="sShare">שתפו בוואטסאפ</button>
+      <button class="b2" id="sNext">לשיר הבא</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ============ DATA ============ */
+// notes: [midi, beats, syllable]. Syllable ending with a space = word break.
+const CH = [
+ {id:"letitgo", cat:"דיסני", tint:"#3b2d86", title:"Let It Go", artist:"עלזה · לשבור את הקרח", ltr:true, bpm:136, type:"melody",
+  notes:[[75,.5,"Let "],[77,.5,"it "],[72,1.5,"go, "],[75,.5,"let "],[77,.5,"it "],[70,2,"go"]],
+  tip:"שתי שורות קצרות, השנייה יורדת נמוך יותר. תנו את זה בביטחון של מלכה.", yt:"Let It Go Idina Menzel Frozen"},
+ {id:"snowman", cat:"דיסני", tint:"#2c4f8f", title:"Do You Want to Build a Snowman?", artist:"אנה · לשבור את הקרח", ltr:true, bpm:112, type:"melody",
+  notes:[[70,.5,"Do "],[70,.5,"you "],[70,.5,"wan"],[67,.5,"na "],[70,.5,"build "],[70,.5,"a "],[75,1,"snow"],[72,1.5,"man?"]],
+  tip:"קול של ילדה קטנה שדופקת על דלת. מתוק ושובב.", yt:"Do You Want to Build a Snowman Frozen"},
+ {id:"whitney", cat:"הצליל הבלתי אפשרי", tint:"#7c1f43", title:"I Will Always Love You", artist:"ויטני יוסטון", ltr:true, bpm:66, type:"melody",
+  notes:[[64,.5,"And "],[73,2,"I "],[71,.5,"will "],[69,.5,"al"],[71,.5,"ways "],[73,1.5,"love "],[71,.5,"you"],[69,2,"…"]],
+  tip:"ה-I הארוך הוא הכול. נשימה עמוקה, ולהחזיק.", yt:"Whitney Houston I Will Always Love You"},
+ {id:"mariah", cat:"הצליל הבלתי אפשרי", tint:"#8a1f6a", title:"צליל השריקה של מריה", artist:"מריה קארי · Emotions", bpm:60, type:"high", targetMidi:91,
+  notes:[[72,1,"עו"],[79,1,"לים "],[84,1,"לים "],[91,3,"למעלה!"]],
+  tip:"אין מילים. פשוט לטפס הכי גבוה שאפשר ולהחזיק שם. סול שישית מקבלת 100.", yt:"Mariah Carey Emotions whistle note"},
+ {id:"jerusalem", cat:"קלאסיקה ישראלית", tint:"#1f5585", title:"ירושלים של זהב", artist:"נעמי שמר · שולי נתן", bpm:84, type:"melody",
+  notes:[[64,.5,"יְ"],[69,.5,"רוּ"],[69,.5,"שָׁ"],[72,1,"לַ"],[71,.5,"יִם "],[69,.5,"שֶׁל "],[68,.5,"זָ"],[69,1.5,"הָב"]],
+  tip:"הפזמון. לאט, חגיגי, עם כל הלב.", yt:"ירושלים של זהב שולי נתן"},
+ {id:"toy", cat:"אירוויזיון", tint:"#6c2a92", title:"Toy", artist:"נטע · ליסבון 2018", ltr:true, bpm:94, type:"melody", wRhythm:.45,
+  notes:[[76,.5,"I'm "],[76,.5,"not "],[74,.5,"your "],[71,1,"toy, "],[76,.5,"you "],[76,.5,"stu"],[74,.5,"pid "],[71,1,"boy"]],
+  tip:"כאן הקצב שווה יותר מהמנגינה. גישה, גישה, גישה.", yt:"Netta Toy Eurovision 2018"},
+ {id:"simpsons", cat:"פתיחים וג'ינגלים", tint:"#8a6512", title:"The Simpsons", artist:"שיר הפתיחה · דני אלפמן", bpm:172, type:"melody",
+  notes:[[72,1.5,"דָּה "],[76,1,"דָּה "],[78,1,"דָּה "],[81,.5,"דָּה "],[79,1.5,"דָּה "],[76,1,"דָּה "],[72,1,"דָּה "],[69,.5,"דָּה "],[66,.5,"דָּה "],[66,.5,"דָּה "],[66,.5,"דָּה "],[67,1.5,"דָּם"]],
+  tip:"מזמזמים את המנגינה של הפתיחה עם ״דה״. מהר וקופצני.", yt:"The Simpsons theme song"},
+ {id:"gandalf", cat:"ציטוטים מסרטים", tint:"#33464d", title:"You Shall Not Pass!", artist:"גנדלף · שר הטבעות", ltr:true, type:"speech", targetMidi:50,
+  syl:[[0,.32,"You "],[.36,.34,"shall "],[.76,.4,"not "],[1.25,1.0,"PASS!"]],
+  tip:"לא שרים, צועקים. קול נמוך, עמוק, והכי חזק שאפשר על PASS.", yt:"You shall not pass Gandalf"},
+ {id:"nessun", cat:"אופרה", tint:"#7a1616", title:"Nessun Dorma", artist:"פברוטי · טורנדוט", ltr:true, bpm:58, type:"melody", wVoice:.35,
+  notes:[[69,.75,"Vin"],[71,3,"ce"],[69,2,"rò!"]],
+  tip:"שלוש הברות, והאמצעית מוחזקת ארוך וגבוה. ידיים פתוחות לצדדים.", yt:"Pavarotti Nessun Dorma"},
+ {id:"yonatan", cat:"שירי ילדים", tint:"#1d6b4c", title:"יונתן הקטן", artist:"שיר ילדים", bpm:120, type:"melody",
+  notes:[[67,1,"יוֹ"],[64,1,"נָ"],[64,2,"תָן "],[65,1,"הַ"],[62,1,"קָּ"],[62,2,"טָן "],[60,1,"רָץ "],[62,1,"בַּ"],[64,1,"בֹּ"],[65,1,"קֶר "],[67,1,"אֶל "],[67,1,"הַ"],[67,2,"גַּן"]],
+  tip:"קל? בדיוק בגלל זה כולם בודקים מי מזייף.", yt:"יונתן הקטן שיר ילדים"},
+];
+const PARTY_IDEAS = ["״הלו?״ בקול של סבתא","מנגינה של פרסומת","״יאללה ביי״ דרמטי","פזמון של אירוויזיון","צחוק של נבל מדיסני"];
+
+/* ============ HELPERS ============ */
+const $ = s => document.querySelector(s);
+const clamp = (x,a=0,b=100) => Math.max(a,Math.min(b,x));
+const median = a => { if(!a.length) return 0; const s=[...a].sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+const m2f = m => 440*Math.pow(2,(m-69)/12);
+const f2m = f => 69+12*Math.log2(f/440);
+const store = { get(k,d){try{const v=localStorage.getItem("kk_"+k);return v==null?d:JSON.parse(v);}catch(e){return d;}}, set(k,v){try{localStorage.setItem("kk_"+k,JSON.stringify(v));}catch(e){}} };
+function toast(t,ms=2600){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,ms);}
+const ICON = {
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16a3 3 0 0 0-2.4 1.2l-6.7-3.4a3 3 0 0 0 0-1.6l6.7-3.4A3 3 0 1 0 15 7l-6.7 3.4a3 3 0 1 0 0 3.2L15 17a3 3 0 1 0 3-1z"/></svg>',
+  yt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.3 6.2 21l1.6-6.6L2.7 9.9l6.8-.6L12 3l2.5 6.3 6.8.6-5.1 4.5 1.6 6.6z"/></svg>'
+};
+
+/* ============ AUDIO ENGINE ============ */
+let ctx=null, micStream=null, micSrc=null;
+function audioCtx(){ if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)(); } if(ctx.state==="suspended") ctx.resume(); return ctx; }
+async function getMic(){
+  audioCtx();
+  if(micStream && micStream.active) return micStream;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error("nomedia");
+  micStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  micSrc = ctx.createMediaStreamSource(micStream);
+  return micStream;
+}
+function micErrorText(e){
+  const n=(e&&e.name)||"";
+  if(n==="NotAllowedError"||n==="SecurityError") return "אין גישה למיקרופון. אשרו מיקרופון בהגדרות האתר בדפדפן ונסו שוב.";
+  if(n==="NotFoundError") return "לא נמצא מיקרופון במכשיר.";
+  if(e&&e.message==="nomedia") return "הדפדפן הזה לא מאפשר מיקרופון. פתחו את הקישור בכרום או בספארי.";
+  return "המיקרופון לא נפתח. אם פתחתם מתוך וואטסאפ, נסו לפתוח בדפדפן רגיל.";
+}
+
+// Recorder: collects raw PCM, gives live pitch per chunk
+function startRecorder(onLive){
+  const proc = ctx.createScriptProcessor(4096,1,1);
+  const mute = ctx.createGain(); mute.gain.value=0;
+  const chunks=[]; const rate=ctx.sampleRate; const t0=ctx.currentTime;
+  proc.onaudioprocess = ev => {
+    const d = new Float32Array(ev.inputBuffer.getChannelData(0)); chunks.push(d);
+    if(onLive){ const ds=decimate(d,rate); const p=pitchAt(ds,Math.max(0,ds.length-1024),1024,60,1500); onLive(ctx.currentTime-t0,p?f2m(p.f):null,rms(d,0,d.length)); }
+  };
+  micSrc.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+  return { stop(){ try{micSrc.disconnect(proc);}catch(e){} proc.disconnect(); mute.disconnect();
+      let n=0; chunks.forEach(c=>n+=c.length); const all=new Float32Array(n); let o=0; chunks.forEach(c=>{all.set(c,o);o+=c.length;}); return {pcm:all,rate}; } };
+}
+function playPCM(rec){
+  const c=audioCtx(); const b=c.createBuffer(1,rec.pcm.length,rec.rate); b.copyToChannel?b.copyToChannel(rec.pcm,0):b.getChannelData(0).set(rec.pcm);
+  const s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(); return s;
+}
+
+/* ============ SYNTH ============ */
+let playing=null;
+function stopPlayback(){ if(playing){ playing.stop(); playing=null; } if(window.speechSynthesis) speechSynthesis.cancel(); }
+function playMelody(ch, onTick, onEnd){
+  stopPlayback(); const c=audioCtx(); const out=c.createGain(); out.gain.value=.22;
+  const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2800; out.connect(lp); lp.connect(c.destination);
+  const start=c.currentTime+.08; const oscs=[]; const tl=timeline(ch);
+  tl.forEach(n=>{
+    const f=m2f(n.m), g=c.createGain(); g.gain.setValueAtTime(0,start+n.t);
+    g.gain.linearRampToValueAtTime(1,start+n.t+.025); g.gain.exponentialRampToValueAtTime(.55,start+n.t+.25);
+    g.gain.setValueAtTime(.55,start+n.t+Math.max(.06,n.d-.06)); g.gain.linearRampToValueAtTime(0,start+n.t+n.d);
+    g.connect(out);
+    [["triangle",1,1],["sine",2,.35],["sine",3,.12]].forEach(([type,h,amp])=>{
+      const o=c.createOscillator(); o.type=type; o.frequency.value=f*h; const a=c.createGain(); a.gain.value=amp;
+      if(ch.type==="high"&&h===1){ o.frequency.setValueAtTime(f,start+n.t); }
+      o.connect(a); a.connect(g); o.start(start+n.t); o.stop(start+n.t+n.d+.05); oscs.push(o); });
+  });
+  const total=tl.length?tl[tl.length-1].t+tl[tl.length-1].d:1; let raf;
+  const tick=()=>{ const t=c.currentTime-start; onTick&&onTick(t); if(t<total+.1) raf=requestAnimationFrame(tick); else { playing=null; onEnd&&onEnd(); } };
+  raf=requestAnimationFrame(tick);
+  playing={stop(){ cancelAnimationFrame(raf); oscs.forEach(o=>{try{o.stop();}catch(e){}}); out.disconnect(); onEnd&&onEnd(); }};
+}
+function playSpeech(ch,onTick,onEnd){
+  stopPlayback();
+  if(!window.speechSynthesis){ toast("הדפדפן לא יודע לדבר. פתחו את המקור ביוטיוב."); onEnd&&onEnd(); return; }
+  const u=new SpeechSynthesisUtterance("You... shall... not... PASS!"); u.lang="en-GB"; u.rate=.7; u.pitch=.3; u.volume=1;
+  const v=speechSynthesis.getVoices().find(v=>/en-GB/i.test(v.lang)&&/male|daniel|arthur|george/i.test(v.name))||speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang)); if(v) u.voice=v;
+  const t0=performance.now(); let raf; const tick=()=>{onTick&&onTick((performance.now()-t0)/1000*0.75); raf=requestAnimationFrame(tick);}; tick();
+  u.onend=u.onerror=()=>{cancelAnimationFrame(raf); playing=null; onEnd&&onEnd();};
+  speechSynthesis.speak(u);
+  playing={stop(){cancelAnimationFrame(raf); speechSynthesis.cancel(); onEnd&&onEnd();}};
+}
+function timeline(ch){
+  if(ch.type==="speech") return ch.syl.map(([t,d,s])=>({t,d,m:ch.targetMidi,s}));
+  const spb=60/ch.bpm; let t=0; return ch.notes.map(([m,b,s])=>{ const n={t,d:b*spb,m,s}; t+=b*spb; return n; });
+}
+const durOf = ch => { const tl=timeline(ch); const l=tl[tl.length-1]; return l.t+l.d; };
+
+/* ============ DSP ============ */
+const SR=16000, HOP=320, WIN=1024; // 20 ms frames
+function decimate(x,rate){ const r=rate/SR; const n=Math.floor(x.length/r); const y=new Float32Array(n);
+  for(let i=0;i<n;i++){ const a=Math.floor(i*r), b=Math.max(a+1,Math.floor((i+1)*r)); let s=0; for(let j=a;j<b;j++) s+=x[j]; y[i]=s/(b-a); } return y; }
+function rms(x,o,n){ let s=0; for(let i=0;i<n;i++){const v=x[o+i]||0; s+=v*v;} return Math.sqrt(s/n); }
+// McLeod pitch method on 16 kHz signal
+function pitchAt(x,off,W,fmin,fmax){
+  if(off+W>x.length) return null; const minLag=Math.floor(SR/fmax), maxLag=Math.min(W-32,Math.ceil(SR/fmin));
+  const nsdf=new Float32Array(maxLag+1);
+  for(let tau=0;tau<=maxLag;tau++){ let acf=0,m=0; const L=W-tau; for(let j=0;j<L;j++){ const a=x[off+j], b=x[off+j+tau]; acf+=a*b; m+=a*a+b*b; } nsdf[tau]=m>0?2*acf/m:0; }
+  // collect key maxima after first negative zero crossing
+  let tau=1; while(tau<maxLag && nsdf[tau]>0) tau++;
+  const peaks=[]; let best=-1;
+  while(tau<maxLag){ while(tau<maxLag && nsdf[tau]<=0) tau++; let pk=tau; while(tau<maxLag && nsdf[tau]>0){ if(nsdf[tau]>nsdf[pk]) pk=tau; tau++; }
+    if(pk<maxLag && pk>=minLag && nsdf[pk]>0){ peaks.push(pk); if(nsdf[pk]>best) best=nsdf[pk]; } }
+  if(best<0.72) return null;
+  const pk=peaks.find(p=>nsdf[p]>=0.9*best); if(pk==null) return null;
+  const a=nsdf[pk-1], b=nsdf[pk], c=nsdf[pk+1]; const den=a-2*b+c; const shift=den?0.5*(a-c)/den:0;
+  return {f:SR/(pk+shift), clarity:b};
+}
+// radix-2 FFT magnitude for timbre
+function fftMag(re){ const n=re.length, im=new Float32Array(n);
+  for(let i=1,j=0;i<n;i++){ let bit=n>>1; for(;j&bit;bit>>=1) j^=bit; j^=bit; if(i<j){ [re[i],re[j]]=[re[j],re[i]]; } }
+  for(let len=2;len<=n;len<<=1){ const ang=-2*Math.PI/len, wr=Math.cos(ang), wi=Math.sin(ang);
+    for(let i=0;i<n;i+=len){ let cr=1,ci=0; for(let k=0;k<len/2;k++){ const ur=re[i+k],ui=im[i+k], vr=re[i+k+len/2]*cr-im[i+k+len/2]*ci, vi=re[i+k+len/2]*ci+im[i+k+len/2]*cr;
+      re[i+k]=ur+vr; im[i+k]=ui+vi; re[i+k+len/2]=ur-vr; im[i+k+len/2]=ui-vi; const nr=cr*wr-ci*wi; ci=cr*wi+ci*wr; cr=nr; } } }
+  const mag=new Float32Array(n/2); for(let i=0;i<n/2;i++) mag[i]=re[i]*re[i]+im[i]*im[i]; return mag; }
+const BANDS=(()=>{ const b=[]; const lo=120, hi=7200, N=18; for(let i=0;i<=N;i++) b.push(lo*Math.pow(hi/lo,i/N)); return b; })();
+function bandsOf(x,off){ const n=512; const w=new Float32Array(n); for(let i=0;i<n;i++) w[i]=(x[off+i]||0)*(0.5-0.5*Math.cos(2*Math.PI*i/(n-1)));
+  const mag=fftMag(w); const out=[]; for(let k=0;k<BANDS.length-1;k++){ const a=Math.floor(BANDS[k]/SR*n), b=Math.max(a+1,Math.floor(BANDS[k+1]/SR*n)); let s=1e-10; for(let i=a;i<b;i++) s+=mag[i]; out.push(10*Math.log10(s/(b-a))); }
+  const mu=out.reduce((p,c)=>p+c,0)/out.length; return out.map(v=>v-mu); }
+
+function analyze(rec, fmax=1100){
+  const x=decimate(rec.pcm,rec.rate); const frames=[]; let maxR=0;
+  for(let off=0; off+WIN<=x.length; off+=HOP){ const r=rms(x,off,WIN); maxR=Math.max(maxR,r); frames.push({t:off/SR, r, off}); }
+  const gate=Math.max(0.006, maxR*0.1);
+  frames.forEach(fr=>{ fr.m=null; if(fr.r<gate) return; const p=pitchAt(x,fr.off,WIN,62,fmax); if(p&&p.f>=62&&p.f<=fmax) fr.m=f2m(p.f); });
+  // median clean-up: drop octave glitches and isolated frames
+  const ms=frames.map(f=>f.m);
+  frames.forEach((f,i)=>{ if(f.m==null) return; const win=[]; for(let k=i-3;k<=i+3;k++) if(ms[k]!=null) win.push(ms[k]); if(win.length<3){ f.m=null; return; } const md=median(win); if(Math.abs(f.m-md)>7) f.m=md; });
+  // timbre on voiced frames (sampled)
+  const vb=[]; frames.forEach((f,i)=>{ if(f.m!=null && i%2===0) vb.push(bandsOf(x,f.off+256)); });
+  const timbre = vb.length? vb[0].map((_,k)=>vb.reduce((s,v)=>s+v[k],0)/vb.length) : null;
+  const voiced=frames.filter(f=>f.m!=null);
+  const active=frames.filter(f=>f.r>=gate);
+  return { frames, voiced, timbre, maxR, gate, t0: active.length?active[0].t:0, t1: active.length?active[active.length-1].t+WIN/SR:0,
+    v0: voiced.length?voiced[0].t:0, v1: voiced.length?voiced[voiced.length-1].t:0 };
+}
+
+/* DTW over two {t,m} series. Returns avg cost and timing deviation. */
+function dtw(A,B,offset,cap=5){
+  const n=A.length, m=B.length; if(!n||!m) return {cost:99,dev:1};
+  const INF=1e9; const D=new Float64Array((n+1)*(m+1)).fill(INF); const L=new Float64Array((n+1)*(m+1));
+  const at=(i,j)=>i*(m+1)+j; D[at(0,0)]=0;
+  const band=Math.max(Math.abs(n-m)+2, Math.ceil(Math.max(n,m)*0.35));
+  for(let i=1;i<=n;i++){ const jc=Math.round(i*m/n); const ja=Math.max(1,jc-band), jb=Math.min(m,jc+band);
+    for(let j=ja;j<=jb;j++){ const c=Math.min(cap,Math.abs(A[i-1].m-offset-B[j-1].m));
+      let best=D[at(i-1,j-1)], bl=L[at(i-1,j-1)];
+      if(D[at(i-1,j)]<best){best=D[at(i-1,j)]; bl=L[at(i-1,j)];}
+      if(D[at(i,j-1)]<best){best=D[at(i,j-1)]; bl=L[at(i,j-1)];}
+      D[at(i,j)]=best+c; L[at(i,j)]=bl+1; } }
+  const cost=D[at(n,m)]/Math.max(1,L[at(n,m)]);
+  // backtrack for timing deviation (normalised time)
+  let i=n,j=m, dev=0, k=0; const ta0=A[0].t, ta1=A[n-1].t||1, tb0=B[0].t, tb1=B[m-1].t||1;
+  while(i>0&&j>0){ dev+=Math.abs((A[i-1].t-ta0)/Math.max(.01,ta1-ta0)-(B[j-1].t-tb0)/Math.max(.01,tb1-tb0)); k++;
+    const d=D[at(i-1,j-1)], u=D[at(i-1,j)], l=D[at(i,j-1)];
+    if(d<=u&&d<=l){i--;j--;} else if(u<l) i--; else j--; }
+  return {cost, dev:dev/Math.max(1,k)};
+}
+function down(arr,step){ const o=[]; for(let i=0;i<arr.length;i+=step) o.push(arr[i]); return o; }
+function bestKeyDTW(U,T){
+  const base=median(U.map(f=>f.m))-median(T.map(f=>f.m)); let best=null;
+  for(let d=-2; d<=2; d+=.5){ const r=dtw(U,T,base+d); if(!best||r.cost<best.cost) best={...r,offset:base+d}; }
+  return best;
+}
+function tuningScore(V){
+  const ms=[]; for(let i=1;i<V.length-1;i++){ if(Math.abs(V[i].m-V[i-1].m)<.3 && Math.abs(V[i+1].m-V[i].m)<.3) ms.push(V[i].m); }
+  if(ms.length<8) return 50;
+  let best=9; for(let c=0;c<1;c+=.05){ let s=0; ms.forEach(m=>{const f=(m-c)-Math.round(m-c); s+=Math.abs(f);}); best=Math.min(best,s/ms.length); }
+  return clamp(100*(1-(best-.06)/.24));
+}
+const melodyFromCost = c => clamp(100*Math.exp(-Math.max(0,c-.3)/1.4));
+const rhythmFrom = (ratio,dev) => clamp(100*Math.exp(-(1.5*Math.abs(Math.log(ratio))+5*dev)));
+
+function targetFrames(ch){ const tl=timeline(ch); const fr=[]; tl.forEach(n=>{ for(let t=n.t; t<n.t+n.d-.04; t+=HOP/SR) fr.push({t,m:n.m}); }); return fr; }
+
+function scoreChallenge(ch, A){
+  if(A.voiced.length<8 && ch.type!=="speech") return null;
+  if(ch.type==="speech") return scoreSpeech(ch,A);
+  if(ch.type==="high") return scoreHigh(ch,A);
+  const U=down(A.voiced,2), T=down(targetFrames(ch),2);
+  const r=bestKeyDTW(U,T);
+  const tune=tuningScore(A.voiced);
+  const melody=clamp(.72*melodyFromCost(r.cost)+.28*tune);
+  const ratio=Math.max(.05,(A.v1-A.v0))/durOf(ch);
+  const rhythm=rhythmFrom(ratio,r.dev);
+  const reg=Math.abs(median(A.voiced.map(f=>f.m))-median(T.map(f=>f.m)));
+  const voice=clamp(100*Math.exp(-reg/9));
+  const wR=ch.wRhythm||.3, wV=ch.wVoice||.22, wM=1-wR-wV;
+  return { total:Math.round(wM*melody+wR*rhythm+wV*voice), meters:[["מנגינה",melody],["קצב",rhythm],["דמיון לקול",voice]],
+    note: reg>8? "המנגינה נשמעה, אבל באוקטבה אחרת מהמקור. זה עולה בנקודות דמיון קול." : "" };
+}
+function scoreSpeech(ch,A){
+  const act=A.frames.filter(f=>f.t>=A.t0&&f.t<=A.t1); if(act.length<10) return null;
+  const dur=A.t1-A.t0, tdur=durOf(ch);
+  // envelope correlation against syllable boxes
+  const N=60, env=[], tgt=[]; const mx=Math.max(...act.map(f=>f.r));
+  for(let i=0;i<N;i++){ const t=A.t0+dur*i/N; const f=act.reduce((b,x)=>Math.abs(x.t-t)<Math.abs(b.t-t)?x:b); env.push(f.r/mx);
+    const tt=tdur*i/N; const s=ch.syl.find(([a,d])=>tt>=a&&tt<=a+d); tgt.push(s?(s[2].includes("PASS")?1:.7):.05); }
+  const mean=a=>a.reduce((p,c)=>p+c,0)/a.length; const ea=mean(env), ta=mean(tgt);
+  let num=0,da=0,db=0; for(let i=0;i<N;i++){num+=(env[i]-ea)*(tgt[i]-ta); da+=(env[i]-ea)**2; db+=(tgt[i]-ta)**2;}
+  const corr=num/Math.sqrt(da*db||1);
+  const rhythm=clamp(100*(.55*((corr+1)/2)+.45*Math.exp(-1.6*Math.abs(Math.log(dur/tdur))))*1.1);
+  const vm=A.voiced.length?median(A.voiced.map(f=>f.m)):60; const voice=clamp(100*Math.exp(-Math.abs(vm-ch.targetMidi)/8));
+  const db20=20*Math.log10(A.maxR+1e-9); const power=clamp((db20+34)/26*100);
+  return { total:Math.round(.4*rhythm+.35*voice+.25*power), meters:[["קצב",rhythm],["עומק הקול",voice],["עוצמה",power]],
+    note: vm>ch.targetMidi+10? "יותר הוביט מגנדלף. נסו קול נמוך מהבטן." : "" };
+}
+function scoreHigh(ch,A){
+  const V=A.voiced; let top=0, hold=0, stab=0;
+  // highest pitch sustained for 0.25 s (12 frames)
+  for(let i=0;i+12<=V.length;i++){ const w=V.slice(i,i+12); if(w[11].t-w[0].t>.4) continue; const md=median(w.map(f=>f.m)); if(md>top) top=md; }
+  if(!top) return null;
+  let run=[], bestRun=[]; V.forEach((f,i)=>{ if(f.m>=top-2 && (!run.length||f.t-run[run.length-1].t<.08)) run.push(f); else { if(run.length>bestRun.length) bestRun=run; run=f.m>=top-2?[f]:[]; } }); if(run.length>bestRun.length) bestRun=run;
+  hold=bestRun.length? bestRun[bestRun.length-1].t-bestRun[0].t : 0;
+  const ms=bestRun.map(f=>f.m); const mu=ms.reduce((a,b)=>a+b,0)/Math.max(1,ms.length); const sd=Math.sqrt(ms.reduce((a,b)=>a+(b-mu)**2,0)/Math.max(1,ms.length));
+  const height=clamp((top-67)/(ch.targetMidi-67)*100); const holdS=clamp(hold/2.5*100); stab=clamp(100*(1-(sd-.15)/1.2));
+  const names=["דו","דו#","רה","רה#","מי","פה","פה#","סול","סול#","לה","לה#","סי"]; const r=Math.round(top);
+  return { total:Math.round(.62*height+.2*holdS+.18*stab), meters:[["גובה",height],["החזקה",holdS],["יציבות",stab]],
+    note:`הצליל הכי גבוה שהחזקתם: ${names[(r%12+12)%12]} באוקטבה ${Math.floor(r/12)-1} (${Math.round(m2f(top))} הרץ).` };
+}
+function scoreParty(R,P){
+  if(P.voiced.length<8||R.voiced.length<8){
+    // fall back to rhythm-only for spoken/unvoiced sources
+    if(R.voiced.length<8 && P.voiced.length>=0){ const ratio=Math.max(.05,P.t1-P.t0)/Math.max(.05,R.t1-R.t0); const rh=clamp(100*Math.exp(-1.6*Math.abs(Math.log(ratio)))); return {total:Math.round(rh*.6), meters:[["מנגינה",0],["קצב",rh],["דמיון לקול",0]]}; }
+    return null; }
+  const U=down(P.voiced,2), T=down(R.voiced,2); const r=bestKeyDTW(U,T);
+  const melody=melodyFromCost(r.cost);
+  const ratio=Math.max(.05,P.v1-P.v0)/Math.max(.05,R.v1-R.v0); const rhythm=rhythmFrom(ratio,r.dev);
+  const reg=Math.abs(median(P.voiced.map(f=>f.m))-median(R.voiced.map(f=>f.m))); const regS=100*Math.exp(-reg/6);
+  let tim=50; if(R.timbre&&P.timbre){ let s=0; R.timbre.forEach((v,k)=>s+=(v-P.timbre[k])**2); const d=Math.sqrt(s/R.timbre.length); tim=clamp(100*(1-(d-1.5)/6)); }
+  const voice=clamp(.5*regS+.5*tim);
+  return { total:Math.round(.36*melody+.24*rhythm+.4*voice), meters:[["מנגינה",melody],["קצב",rhythm],["דמיון לקול",voice]] };
+}
+function verdict(s){
+  if(s>=90) return ["גרסת מקור","אי אפשר להבדיל. יש לך חוזה הקלטות?"];
+  if(s>=80) return ["דיווה מוסמכת","עוד קצת ומזמינים אותך לאירוויזיון."];
+  if(s>=65) return ["כוכב עולה","יש כאן משהו. עוד ניסיון ואתם שם."];
+  if(s>=50) return ["זמר ליווי","באמצע הבמה, לא בקדמתה. בינתיים."];
+  if(s>=35) return ["זמר מקלחת","במקלחת זה נשמע הרבה יותר טוב, נכון?"];
+  return ["צפרדע בחורף","קרקור אמיץ. נסו שוב, הפעם קרוב יותר למיקרופון."];
+}
+
+/* ============ PIANO ROLL ============ */
+function makeRoll(canvas){
+  const st={target:[],live:[],dur:4,head:-1,lo:55,hi:80,offset:0,refLine:null};
+  function fit(){ const dpr=Math.min(2,window.devicePixelRatio||1); const w=canvas.clientWidth||300, h=canvas.clientHeight||170; canvas.width=w*dpr; canvas.height=h*dpr; draw(); }
+  function y(m,h){ return h-8-(m-st.lo)/(st.hi-st.lo)*(h-16); }
+  function draw(){
+    const c=canvas.getContext("2d"), W=canvas.width, H=canvas.height, dpr=Math.min(2,window.devicePixelRatio||1);
+    c.clearRect(0,0,W,H); const x=t=>W-(t/st.dur)*W; // RTL time flows right->left? keep LTR for music: left->right
+    const X=t=>(t/st.dur)*W;
+    c.strokeStyle="rgba(251,243,230,.06)"; c.lineWidth=1; for(let m=Math.ceil(st.lo);m<=st.hi;m++){ if(m%12===0||m%12===5){ c.beginPath(); c.moveTo(0,y(m,H)); c.lineTo(W,y(m,H)); c.stroke(); } }
+    st.target.forEach(n=>{ c.fillStyle="rgba(111,227,212,.75)"; const yy=y(n.m,H); const r=6*dpr; c.beginPath(); c.roundRect?c.roundRect(X(n.t)+1,yy-r,Math.max(4,X(n.d)-3),r*2,r):c.rect(X(n.t)+1,yy-r,Math.max(4,X(n.d)-3),r*2); c.fill(); });
+    if(st.refLine){ c.strokeStyle="rgba(111,227,212,.85)"; c.lineWidth=3*dpr; c.lineCap="round"; let pv=null; c.beginPath(); st.refLine.forEach(p=>{ if(p.m==null||(pv&&p.t-pv.t>.1)){ pv=p.m==null?null:p; if(p.m!=null){c.moveTo(X(p.t),y(p.m,H));} return;} if(!pv) c.moveTo(X(p.t),y(p.m,H)); else c.lineTo(X(p.t),y(p.m,H)); pv=p; }); c.stroke(); }
+    c.strokeStyle="#ff5d8f"; c.lineWidth=3*dpr; c.lineCap="round"; c.lineJoin="round"; c.beginPath(); let prev=null;
+    st.live.forEach(p=>{ if(p.m==null){prev=null;return;} const mm=p.m-st.offset; if(!prev||p.t-prev.t>.25) c.moveTo(X(p.t),y(mm,H)); else c.lineTo(X(p.t),y(mm,H)); prev=p; }); c.stroke();
+    if(st.head>=0){ c.strokeStyle="rgba(255,201,77,.9)"; c.lineWidth=2*dpr; c.beginPath(); c.moveTo(X(st.head),0); c.lineTo(X(st.head),H); c.stroke(); }
+  }
+  new ResizeObserver(fit).observe(canvas);
+  return { st, draw, fit,
+    setTarget(tl,dur){ st.target=tl; st.dur=dur; const ms=tl.map(n=>n.m); st.lo=Math.min(...ms)-5; st.hi=Math.max(...ms)+5; st.refLine=null; draw(); },
+    setRef(pts,dur){ st.target=[]; st.refLine=pts; st.dur=dur; const ms=pts.filter(p=>p.m!=null).map(p=>p.m); if(ms.length){ st.lo=Math.min(...ms)-4; st.hi=Math.max(...ms)+4; } draw(); } };
+}
+
+/* ============ CHALLENGE FEED ============ */
+const feed=$("#feed"); const cards=[];
+function buildIntro(){
+  const s=document.createElement("section"); s.className="card intro"; s.style.setProperty("--tint","#5a1a4a");
+  s.innerHTML=`<div class="beam"></div><div class="cardInner">
+    <h1>כמה אתם<br><em>נשמעים כמוהם?</em></h1>
+    <p>עשרה קטעים מפורסמים. שומעים, שרים למיקרופון, והמשחק משווה את הקול שלכם למקור.</p>
+    <div class="steps"><div><b>1</b>לוחצים ״הקשבה״ ושומעים את המנגינה</div><div><b>2</b>לוחצים ״שירו״, ספירה לאחור, ושרים</div><div><b>3</b>מקבלים ציון: מנגינה, קצב ודמיון קול</div></div>
+    <button class="cta" id="startBtn">יאללה, מתחילים</button>
+    <p class="tip">צריך לאשר מיקרופון פעם אחת. ההקלטות לא נשמרות ולא נשלחות לשום מקום.</p></div>
+    <div class="swipe">החליקו למעלה ↑</div>`;
+  feed.appendChild(s);
+  s.querySelector("#startBtn").onclick=()=>cards[0].el.scrollIntoView({behavior:"smooth"});
+}
+function buildCard(ch,i){
+  const el=document.createElement("section"); el.className="card"; el.id="c-"+ch.id; el.style.setProperty("--tint",ch.tint);
+  const best=store.get("best_"+ch.id,null);
+  const tl=timeline(ch);
+  const lyr=tl.map((n,k)=>`<span data-k="${k}">${n.s.replace(/ $/,"&nbsp;")}</span>`).join("");
+  el.innerHTML=`<div class="beam"></div>
+   <div class="rail">
+     <div class="rbest"><div class="ic">${ICON.star}</div><span class="best">${best??"–"}</span></div>
+     <button class="rshare" aria-label="שתפו את האתגר"><span class="ic">${ICON.share}</span>שתפו</button>
+     <a class="ryt" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ch.yt)}" target="_blank" rel="noopener" aria-label="המקור ביוטיוב"><span class="ic">${ICON.yt}</span>מקור</a>
+   </div>
+   <div class="cardInner">
+     <div class="meta"><span class="chip">${ch.cat}</span><span class="count" dir="ltr">${i+1} / ${CH.length}</span></div>
+     <h2 class="title" ${ch.ltr?'dir="ltr" style="text-align:right"':''}>${ch.title}</h2>
+     <div class="artist">${ch.artist}</div>
+     <canvas class="roll"></canvas>
+     <div class="lyric" ${ch.ltr?'dir="ltr" style="text-align:right"':''}>${lyr}</div>
+     <div class="tip">${ch.tip}</div>
+     <div class="controls">
+       <button class="btnPlay pl">${ICON.play}<span>הקשבה</span></button>
+       <button class="btnMic rc">${ICON.mic}<span>שירו</span></button>
+     </div>
+   </div>
+   ${i<CH.length-1?'<div class="swipe">החליקו לשיר הבא ↑</div>':''}`;
+  feed.appendChild(el);
+  const roll=makeRoll(el.querySelector(".roll")); roll.setTarget(tl,durOf(ch)+(ch.type==="speech"?.4:.6));
+  const card={ch,el,roll,tl};
+  el.querySelector(".pl").onclick=()=>togglePlay(card);
+  el.querySelector(".rc").onclick=()=>toggleRec(card);
+  el.querySelector(".rshare").onclick=()=>share(`🎤 קול קורא: מי מכם מצליח לחקות את "${ch.title}"? ${best!=null?`השיא שלי ${best}. `:""}`, ch.id);
+  cards.push(card);
+}
+function lyricAt(card,t){ card.el.querySelectorAll(".lyric span").forEach((sp,k)=>{ const n=card.tl[k]; sp.className= t<0?"": (t>=n.t&&t<n.t+n.d)?"on":(t>=n.t+n.d?"done":""); }); }
+
+let busy=null; // {card, kind}
+function togglePlay(card){
+  const btn=card.el.querySelector(".pl");
+  if(busy&&busy.kind==="play"&&busy.card===card){ stopPlayback(); return; }
+  if(busy) return;
+  busy={card,kind:"play"}; btn.innerHTML=ICON.stop+"<span>עצירה</span>";
+  const end=()=>{ busy=null; btn.innerHTML=ICON.play+"<span>הקשבה</span>"; card.roll.st.head=-1; card.roll.draw(); lyricAt(card,-1); };
+  const tick=t=>{ card.roll.st.head=t; card.roll.draw(); lyricAt(card,t); };
+  card.ch.type==="speech"? playSpeech(card.ch,tick,end) : playMelody(card.ch,tick,end);
+}
+async function countdown(host){
+  const d=document.createElement("div"); d.className="countdown"; host.appendChild(d);
+  for(const n of ["3","2","1"]){ d.textContent=n; await new Promise(r=>setTimeout(r,650)); }
+  d.remove();
+}
+async function toggleRec(card){
+  const btn=card.el.querySelector(".rc");
+  if(busy&&busy.kind==="rec"&&busy.card===card){ busy.finish(); return; }
+  if(busy) { if(busy.kind==="play") stopPlayback(); else return; }
+  try{ await getMic(); }catch(e){ toast(micErrorText(e),4500); return; }
+  busy={card,kind:"wait"};
+  await countdown(card.el);
+  const live=[]; card.roll.st.live=live; card.roll.st.offset=0;
+  const tm=median(card.tl.map(n=>n.m));
+  const rec=startRecorder((t,m,r)=>{ live.push({t,m}); const vm=live.filter(p=>p.m!=null).map(p=>p.m);
+    if(vm.length>3 && card.ch.type==="melody") card.roll.st.offset=Math.round(median(vm)-tm);
+    card.roll.st.head=t; card.roll.draw(); lyricAt(card,t); });
+  btn.classList.add("rec"); btn.innerHTML=ICON.stop+"<span>סיום</span>";
+  const maxT=durOf(card.ch)+(card.ch.type==="high"?3:1.6);
+  let done=false; const timer=setTimeout(()=>finish(),maxT*1000);
+  function finish(){ if(done) return; done=true; clearTimeout(timer);
+    const data=rec.stop(); btn.classList.remove("rec"); btn.innerHTML=ICON.mic+"<span>שירו</span>"; card.roll.st.head=-1; lyricAt(card,-1);
+    busy=null; btn.disabled=true; btn.querySelector("span").textContent="מנתח…";
+    setTimeout(()=>{ let res=null; try{ const A=analyze(data, card.ch.type==="high"?2100:1100);
+        card.roll.st.live=A.frames.map(f=>({t:f.t-A.v0+0, m:f.m})); card.roll.st.offset= card.ch.type==="melody"&&A.voiced.length? Math.round(median(A.voiced.map(f=>f.m))-tm):0; card.roll.draw();
+        res=scoreChallenge(card.ch,A); }catch(e){ console.error(e); }
+      btn.disabled=false; btn.querySelector("span").textContent="שירו";
+      if(!res){ toast("לא שמעתי מספיק. התקרבו למיקרופון ושירו חזק יותר.",3500); return; }
+      const prev=store.get("best_"+card.ch.id,null); const isBest=prev==null||res.total>prev;
+      if(isBest){ store.set("best_"+card.ch.id,res.total); card.el.querySelector(".best").textContent=res.total; }
+      showResult(res,{title:card.ch.title,id:card.ch.id,isBest,prev,again:()=>toggleRec(card),next:()=>{ const nx=cards[cards.indexOf(card)+1]; if(nx) nx.el.scrollIntoView({behavior:"smooth"}); else toast("סיימתם את כל העשרה! נסו את מצב המסיבה."); }});
+    },30);
+  }
+  busy={card,kind:"rec",finish};
+}
+
+/* ============ RESULT SHEET ============ */
+let sheetCtx=null;
+function showResult(res,o){
+  sheetCtx=o; const [v,sub]=verdict(res.total);
+  $("#verdict").textContent=v; $("#verdictSub").textContent=(o.isBest&&o.prev!=null?`שיא חדש! (היה ${o.prev}) `:"")+(res.note||sub);
+  $("#meters").innerHTML=res.meters.map(([n,val])=>`<div class="meter"><span>${n}</span><div class="bar"><i style="width:0"></i></div><span class="v">${Math.round(val)}</span></div>`).join("");
+  $("#sNext").hidden=!o.next; $("#sNext").textContent=o.nextLabel||"לשיר הבא";
+  const arc=$("#dialArc"); arc.style.strokeDashoffset=326.7; $("#dialNum").textContent="0";
+  $("#sheet").classList.add("open");
+  requestAnimationFrame(()=>{ setTimeout(()=>{ arc.style.strokeDashoffset=326.7*(1-res.total/100);
+    $("#meters").querySelectorAll(".bar i").forEach((b,k)=>b.style.width=clamp(res.meters[k][1])+"%");
+    const t0=performance.now(); const step=()=>{ const p=Math.min(1,(performance.now()-t0)/900); $("#dialNum").textContent=Math.round(res.total*p); if(p<1) requestAnimationFrame(step); }; step(); },60); });
+  sheetCtx.text=o.shareText||`🎤 קיבלתי ${res.total} על "${o.title}" בקול קורא (${v}). חושבים שתעשו יותר טוב?`;
+}
+function closeSheet(){ $("#sheet").classList.remove("open"); }
+$("#sAgain").onclick=()=>{ closeSheet(); sheetCtx&&sheetCtx.again&&setTimeout(sheetCtx.again,250); };
+$("#sNext").onclick=()=>{ closeSheet(); sheetCtx&&sheetCtx.next&&sheetCtx.next(); };
+$("#sShare").onclick=()=>{ sheetCtx&&share(sheetCtx.text, sheetCtx.id); };
+$("#sheet").addEventListener("click",e=>{ if(e.target.classList.contains("grab")) closeSheet(); });
+let sy=null; $("#sheet").addEventListener("touchstart",e=>sy=e.touches[0].clientY,{passive:true});
+$("#sheet").addEventListener("touchend",e=>{ if(sy!=null&&e.changedTouches[0].clientY-sy>70) closeSheet(); sy=null; });
+
+function pageUrl(id){ const u=location.href.split("#")[0]; return id? u+"#c-"+id : u; }
+async function share(text,id){
+  const url=pageUrl(id);
+  if(navigator.share){ try{ await navigator.share({title:"קול קורא",text,url}); return; }catch(e){ if(e&&e.name==="AbortError") return; } }
+  window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener");
+}
+
+/* ============ PARTY MODE ============ */
+const party={ref:null,refA:null,players:[],roll1:null,roll2:null};
+function initParty(){
+  party.roll1=makeRoll($("#srcRoll")); party.roll2=makeRoll($("#plRoll"));
+  party.roll1.setRef([],8); party.roll2.setRef([],8);
+  $("#ideas").innerHTML=PARTY_IDEAS.map(t=>`<button>${t}</button>`).join("");
+  $("#ideas").querySelectorAll("button").forEach(b=>b.onclick=()=>toast("רעיון: "+b.textContent));
+  $("#srcRec").onclick=recSource; $("#srcPlay").onclick=()=>party.ref&&(stopPlayback(),playing={stop(){}},playPCM(party.ref));
+  $("#plPlay").onclick=()=>party.ref&&playPCM(party.ref);
+  $("#plRec").onclick=recPlayer;
+  $("#newRound").onclick=()=>{ party.ref=null; party.refA=null; party.players=[]; $("#pStep2").hidden=true; $("#pStep3").hidden=true; $("#srcPlay").disabled=true; party.roll1.setRef([],8); $("#srcMsg").textContent="שירו או אמרו משהו קצר, 3 עד 10 שניות. לחצו שוב כדי לעצור."; window.scrollTo(0,0); $("#party").scrollTop=0; };
+}
+let partyRec=null;
+async function recSource(){
+  const btn=$("#srcRec");
+  if(partyRec){ partyRec(); return; }
+  try{ await getMic(); }catch(e){ toast(micErrorText(e),4500); return; }
+  await countdown($("#pStep1"));
+  const live=[]; party.roll1.setRef(live,10);
+  const rec=startRecorder((t,m)=>{ live.push({t,m}); party.roll1.st.head=t; party.roll1.draw(); if(t>12) partyRec&&partyRec(); });
+  btn.classList.add("rec"); btn.querySelector("span").textContent="עצירה";
+  partyRec=()=>{ partyRec=null; const data=rec.stop(); btn.classList.remove("rec"); btn.querySelector("span").textContent="הקליטו מחדש"; party.roll1.st.head=-1;
+    const A=analyze(data); if(A.t1-A.t0<1){ $("#srcMsg").textContent="קצר מדי. נסו שוב, לפחות שנייה וחצי."; return; }
+    party.ref=data; party.refA=A; party.players=[];
+    const pts=A.frames.filter(f=>f.t>=A.t0-.1&&f.t<=A.t1).map(f=>({t:f.t-A.t0,m:f.m})); const dur=A.t1-A.t0+.3;
+    party.roll1.setRef(pts,dur); party.roll2.setRef(pts,dur);
+    $("#srcPlay").disabled=false; $("#srcMsg").textContent=`נקלט מקור באורך ${(A.t1-A.t0).toFixed(1)} שניות. עכשיו מעבירים את הטלפון.`;
+    $("#pStep2").hidden=false; $("#pStep2").scrollIntoView({behavior:"smooth"}); };
+}
+let plRec=null;
+async function recPlayer(){
+  const btn=$("#plRec");
+  if(plRec){ plRec(); return; }
+  if(!party.refA) return;
+  try{ await getMic(); }catch(e){ toast(micErrorText(e),4500); return; }
+  await countdown($("#pStep2"));
+  const live=[]; party.roll2.st.live=live; const R=party.refA; const rm=median(R.voiced.map(f=>f.m))||60;
+  const rec=startRecorder((t,m)=>{ live.push({t,m}); const vm=live.filter(p=>p.m!=null).map(p=>p.m); if(vm.length>3) party.roll2.st.offset=median(vm)-rm; party.roll2.st.head=t; party.roll2.draw(); });
+  btn.classList.add("rec"); btn.querySelector("span").textContent="סיום";
+  const timer=setTimeout(()=>plRec&&plRec(),((R.t1-R.t0)+2)*1000);
+  plRec=()=>{ plRec=null; clearTimeout(timer); const data=rec.stop(); btn.classList.remove("rec"); btn.querySelector("span").textContent="חקו עכשיו"; party.roll2.st.head=-1;
+    const P=analyze(data); const res=scoreParty(R,P);
+    party.roll2.st.live=P.frames.filter(f=>f.t>=P.t0-.1).map(f=>({t:f.t-P.t0,m:f.m})); party.roll2.draw();
+    if(!res){ toast("לא שמעתי מספיק. התקרבו למיקרופון ונסו שוב.",3500); return; }
+    const name=($("#plName").value||"").trim()||`מתחרה ${party.players.length+1}`; const src=($("#srcName").value||"").trim()||"המקור";
+    party.players.push({name,...res}); renderBoard();
+    showResult(res,{title:`${src}`, id:null, shareText:`🎤 ${name} קיבל ${res.total} בחיקוי של ${src} בקול קורא!`, again:()=>recPlayer(), nextLabel:"השחקן הבא",
+      next:()=>{ $("#plName").value=""; $("#plName").focus(); }});
+  };
+}
+function renderBoard(){
+  $("#pStep3").hidden=false; const src=($("#srcName").value||"").trim()||"המקור";
+  const rows=[...party.players].sort((a,b)=>b.total-a.total);
+  $("#board").innerHTML=rows.map((p,i)=>`<div class="row"><span class="rk">${i+1}</span><span class="nm"></span><span class="sc">${p.total}</span><span class="sub">מנגינה ${Math.round(p.meters[0][1])} · קצב ${Math.round(p.meters[1][1])} · קול ${Math.round(p.meters[2][1])}</span></div>`).join("");
+  $("#board").querySelectorAll(".nm").forEach((el,i)=>el.textContent=rows[i].name+(i===0?` · הכי דומה ל${src}`:""));
+}
+
+/* ============ TABS / BOOT ============ */
+function setTab(p){ $("#tabCh").setAttribute("aria-selected",!p); $("#tabParty").setAttribute("aria-selected",p); $("#feed").hidden=p; $("#party").hidden=!p; stopPlayback(); if(p) setTimeout(()=>{party.roll1.fit(); party.roll2.fit();},30); }
+$("#tabCh").onclick=()=>setTab(false); $("#tabParty").onclick=()=>setTab(true);
+
+buildIntro(); CH.forEach(buildCard); initParty();
+if(location.hash==="#party") setTab(true);
+else if(location.hash.startsWith("#c-")){ const el=document.getElementById(location.hash.slice(1)); if(el) setTimeout(()=>el.scrollIntoView(),50); }
+if(window.speechSynthesis) speechSynthesis.getVoices();
+// expose for testing
+window.__kk={analyze,scoreChallenge,scoreParty,CH,targetFrames,timeline,showResult};
+</script>
+</body>
+</html>

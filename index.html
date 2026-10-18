@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>קול קורא</title>
+<title>בּוּל!</title>
 <meta name="description" content="משחק חיקויים: שומעים קטע, שרים למיקרופון, ומקבלים ציון כמה זה דומה.">
-<meta property="og:title" content="קול קורא 🎤 כמה אתם נשמעים כמוהם?">
+<meta property="og:title" content="בּוּל! 🎤 כמה אתם נשמעים כמוהם?">
 <meta property="og:description" content="שומעים קטע, שרים למיקרופון, ומקבלים ציון על מנגינה, קצב ודמיון קול.">
 <meta name="theme-color" content="#170d1c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +51,12 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--spot);outline-offse
 .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 h2.title{font-family:var(--display);font-weight:400;font-size:clamp(30px,8.5vw,46px);line-height:1.02;margin:0;text-wrap:balance}
 .artist{color:var(--muted);font-size:16px;margin-top:-8px}
+.stageBox{position:relative;width:100%;}
+.vid{position:absolute;inset:0;border-radius:14px;overflow:hidden;background:#000;z-index:3}
+.vid iframe{width:100%;height:100%;border:0;display:block}
+.vid .x{position:absolute;top:6px;left:6px;z-index:4;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:18px;line-height:32px;text-align:center}
+.btnTune{width:52px;height:52px;flex:none;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center}
+.btnTune svg{width:22px;height:22px}
 .roll{width:100%;height:170px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line);display:block}
 .lyric{font-size:20px;font-weight:600;line-height:1.5;min-height:30px;unicode-bidi:plaintext}
 .lyric span{transition:color .1s}
@@ -139,7 +145,7 @@ h2.title{font-family:var(--display);font-weight:400;font-size:clamp(30px,8.5vw,4
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="logo"><i></i>קול קורא</div>
+    <div class="logo"><i></i>בּוּל!</div>
     <div class="tabs" role="tablist">
       <button role="tab" id="tabCh" aria-selected="true">אתגרים</button>
       <button role="tab" id="tabParty" aria-selected="false">מסיבה</button>
@@ -220,34 +226,34 @@ h2.title{font-family:var(--display);font-weight:400;font-size:clamp(30px,8.5vw,4
 const CH = [
  {id:"letitgo", cat:"דיסני", tint:"#3b2d86", title:"Let It Go", artist:"עלזה · לשבור את הקרח", ltr:true, bpm:136, type:"melody",
   notes:[[75,.5,"Let "],[77,.5,"it "],[72,1.5,"go, "],[75,.5,"let "],[77,.5,"it "],[70,2,"go"]],
-  tip:"שתי שורות קצרות, השנייה יורדת נמוך יותר. תנו את זה בביטחון של מלכה.", yt:"Let It Go Idina Menzel Frozen"},
+  tip:"שתי שורות קצרות, השנייה יורדת נמוך יותר. תנו את זה בביטחון של מלכה.", yt:{id:"L0MK7qz13bU",s:57,e:67}},
  {id:"snowman", cat:"דיסני", tint:"#2c4f8f", title:"Do You Want to Build a Snowman?", artist:"אנה · לשבור את הקרח", ltr:true, bpm:112, type:"melody",
   notes:[[70,.5,"Do "],[70,.5,"you "],[70,.5,"wan"],[67,.5,"na "],[70,.5,"build "],[70,.5,"a "],[75,1,"snow"],[72,1.5,"man?"]],
-  tip:"קול של ילדה קטנה שדופקת על דלת. מתוק ושובב.", yt:"Do You Want to Build a Snowman Frozen"},
+  tip:"קול של ילדה קטנה שדופקת על דלת. מתוק ושובב.", yt:{id:"TeQ_TTyLGMs",s:3,e:13}},
  {id:"whitney", cat:"הצליל הבלתי אפשרי", tint:"#7c1f43", title:"I Will Always Love You", artist:"ויטני יוסטון", ltr:true, bpm:66, type:"melody",
   notes:[[64,.5,"And "],[73,2,"I "],[71,.5,"will "],[69,.5,"al"],[71,.5,"ways "],[73,1.5,"love "],[71,.5,"you"],[69,2,"…"]],
-  tip:"ה-I הארוך הוא הכול. נשימה עמוקה, ולהחזיק.", yt:"Whitney Houston I Will Always Love You"},
+  tip:"ה-I הארוך הוא הכול. נשימה עמוקה, ולהחזיק.", yt:{id:"OTJtq2DGGk8",s:40,e:55}},
  {id:"mariah", cat:"הצליל הבלתי אפשרי", tint:"#8a1f6a", title:"צליל השריקה של מריה", artist:"מריה קארי · Emotions", bpm:60, type:"high", targetMidi:91,
-  notes:[[72,1,"עו"],[79,1,"לים "],[84,1,"לים "],[91,3,"למעלה!"]],
-  tip:"אין מילים. פשוט לטפס הכי גבוה שאפשר ולהחזיק שם. סול שישית מקבלת 100.", yt:"Mariah Carey Emotions whistle note"},
+  notes:[[72,1,"אוּ "],[79,1,"אוּ "],[84,1,"אוּ "],[91,3,"אוּוּוּוּ!"]],
+  tip:"אין מילים. פשוט לטפס הכי גבוה שאפשר ולהחזיק שם. סול שישית מקבלת 100.", yt:{id:"NrJEFrth27Q",s:160,e:183}},
  {id:"jerusalem", cat:"קלאסיקה ישראלית", tint:"#1f5585", title:"ירושלים של זהב", artist:"נעמי שמר · שולי נתן", bpm:84, type:"melody",
   notes:[[64,.5,"יְ"],[69,.5,"רוּ"],[69,.5,"שָׁ"],[72,1,"לַ"],[71,.5,"יִם "],[69,.5,"שֶׁל "],[68,.5,"זָ"],[69,1.5,"הָב"]],
-  tip:"הפזמון. לאט, חגיגי, עם כל הלב.", yt:"ירושלים של זהב שולי נתן"},
+  tip:"הפזמון. לאט, חגיגי, עם כל הלב.", yt:{id:"J54pEaEBM4M",s:43,e:63}},
  {id:"toy", cat:"אירוויזיון", tint:"#6c2a92", title:"Toy", artist:"נטע · ליסבון 2018", ltr:true, bpm:94, type:"melody", wRhythm:.45,
   notes:[[76,.5,"I'm "],[76,.5,"not "],[74,.5,"your "],[71,1,"toy, "],[76,.5,"you "],[76,.5,"stu"],[74,.5,"pid "],[71,1,"boy"]],
-  tip:"כאן הקצב שווה יותר מהמנגינה. גישה, גישה, גישה.", yt:"Netta Toy Eurovision 2018"},
+  tip:"כאן הקצב שווה יותר מהמנגינה. גישה, גישה, גישה.", yt:{id:"CziHrYYSyPc",s:40,e:57}},
  {id:"simpsons", cat:"פתיחים וג'ינגלים", tint:"#8a6512", title:"The Simpsons", artist:"שיר הפתיחה · דני אלפמן", bpm:172, type:"melody",
   notes:[[72,1.5,"דָּה "],[76,1,"דָּה "],[78,1,"דָּה "],[81,.5,"דָּה "],[79,1.5,"דָּה "],[76,1,"דָּה "],[72,1,"דָּה "],[69,.5,"דָּה "],[66,.5,"דָּה "],[66,.5,"דָּה "],[66,.5,"דָּה "],[67,1.5,"דָּם"]],
-  tip:"מזמזמים את המנגינה של הפתיחה עם ״דה״. מהר וקופצני.", yt:"The Simpsons theme song"},
+  tip:"מזמזמים את המנגינה של הפתיחה עם ״דה״. מהר וקופצני.", yt:{id:"Fttst9dG6Ko",s:0,e:13}},
  {id:"gandalf", cat:"ציטוטים מסרטים", tint:"#33464d", title:"You Shall Not Pass!", artist:"גנדלף · שר הטבעות", ltr:true, type:"speech", targetMidi:50,
   syl:[[0,.32,"You "],[.36,.34,"shall "],[.76,.4,"not "],[1.25,1.0,"PASS!"]],
-  tip:"לא שרים, צועקים. קול נמוך, עמוק, והכי חזק שאפשר על PASS.", yt:"You shall not pass Gandalf"},
+  tip:"לא שרים, צועקים. קול נמוך, עמוק, והכי חזק שאפשר על PASS.", yt:{id:"3xYXUeSmb-Y",s:0,e:8}},
  {id:"nessun", cat:"אופרה", tint:"#7a1616", title:"Nessun Dorma", artist:"פברוטי · טורנדוט", ltr:true, bpm:58, type:"melody", wVoice:.35,
   notes:[[69,.75,"Vin"],[71,3,"ce"],[69,2,"rò!"]],
-  tip:"שלוש הברות, והאמצעית מוחזקת ארוך וגבוה. ידיים פתוחות לצדדים.", yt:"Pavarotti Nessun Dorma"},
+  tip:"שלוש הברות, והאמצעית מוחזקת ארוך וגבוה. ידיים פתוחות לצדדים.", yt:{id:"cWc7vYjgnTs",s:138,e:162}},
  {id:"yonatan", cat:"שירי ילדים", tint:"#1d6b4c", title:"יונתן הקטן", artist:"שיר ילדים", bpm:120, type:"melody",
   notes:[[67,1,"יוֹ"],[64,1,"נָ"],[64,2,"תָן "],[65,1,"הַ"],[62,1,"קָּ"],[62,2,"טָן "],[60,1,"רָץ "],[62,1,"בַּ"],[64,1,"בֹּ"],[65,1,"קֶר "],[67,1,"אֶל "],[67,1,"הַ"],[67,2,"גַּן"]],
-  tip:"קל? בדיוק בגלל זה כולם בודקים מי מזייף.", yt:"יונתן הקטן שיר ילדים"},
+  tip:"קל? בדיוק בגלל זה כולם בודקים מי מזייף.", yt:{id:"QrkDbNul0U8",s:0,e:14}},
 ];
 const PARTY_IDEAS = ["״הלו?״ בקול של סבתא","מנגינה של פרסומת","״יאללה ביי״ דרמטי","פזמון של אירוויזיון","צחוק של נבל מדיסני"];
 
@@ -265,6 +271,7 @@ const ICON = {
   mic:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12z"/></svg>',
   share:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16a3 3 0 0 0-2.4 1.2l-6.7-3.4a3 3 0 0 0 0-1.6l6.7-3.4A3 3 0 1 0 15 7l-6.7 3.4a3 3 0 1 0 0 3.2L15 17a3 3 0 1 0 3-1z"/></svg>',
   yt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.6A4 4 0 1 0 14 17V7h4V3z"/></svg>',
   star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.3 6.2 21l1.6-6.6L2.7 9.9l6.8-.6L12 3l2.5 6.3 6.8.6-5.1 4.5 1.6 6.6z"/></svg>'
 };
 
@@ -525,7 +532,7 @@ function buildIntro(){
   s.innerHTML=`<div class="beam"></div><div class="cardInner">
     <h1>כמה אתם<br><em>נשמעים כמוהם?</em></h1>
     <p>עשרה קטעים מפורסמים. שומעים, שרים למיקרופון, והמשחק משווה את הקול שלכם למקור.</p>
-    <div class="steps"><div><b>1</b>לוחצים ״הקשבה״ ושומעים את המנגינה</div><div><b>2</b>לוחצים ״שירו״, ספירה לאחור, ושרים</div><div><b>3</b>מקבלים ציון: מנגינה, קצב ודמיון קול</div></div>
+    <div class="steps"><div><b>1</b>לוחצים ״המקור״ ושומעים את הקטע המקורי</div><div><b>2</b>לוחצים ״שירו״, ספירה לאחור, ושרים</div><div><b>3</b>מקבלים ציון: מנגינה, קצב ודמיון קול</div></div>
     <button class="cta" id="startBtn">יאללה, מתחילים</button>
     <p class="tip">צריך לאשר מיקרופון פעם אחת. ההקלטות לא נשמרות ולא נשלחות לשום מקום.</p></div>
     <div class="swipe">החליקו למעלה ↑</div>`;
@@ -541,17 +548,18 @@ function buildCard(ch,i){
    <div class="rail">
      <div class="rbest"><div class="ic">${ICON.star}</div><span class="best">${best??"–"}</span></div>
      <button class="rshare" aria-label="שתפו את האתגר"><span class="ic">${ICON.share}</span>שתפו</button>
-     <a class="ryt" href="https://www.youtube.com/results?search_query=${encodeURIComponent(ch.yt)}" target="_blank" rel="noopener" aria-label="המקור ביוטיוב"><span class="ic">${ICON.yt}</span>מקור</a>
+     <a class="ryt" href="https://www.youtube.com/watch?v=${ch.yt.id}&t=${ch.yt.s}s" target="_blank" rel="noopener" aria-label="המקור ביוטיוב"><span class="ic">${ICON.yt}</span>מקור</a>
    </div>
    <div class="cardInner">
      <div class="meta"><span class="chip">${ch.cat}</span><span class="count" dir="ltr">${i+1} / ${CH.length}</span></div>
      <h2 class="title" ${ch.ltr?'dir="ltr" style="text-align:right"':''}>${ch.title}</h2>
      <div class="artist">${ch.artist}</div>
-     <canvas class="roll"></canvas>
+     <div class="stageBox"><canvas class="roll"></canvas></div>
      <div class="lyric" ${ch.ltr?'dir="ltr" style="text-align:right"':''}>${lyr}</div>
      <div class="tip">${ch.tip}</div>
      <div class="controls">
-       <button class="btnPlay pl">${ICON.play}<span>הקשבה</span></button>
+       <button class="btnPlay org">${ICON.yt}<span>המקור</span></button>
+       <button class="btnTune pl" aria-label="השמעת המנגינה בלבד" title="המנגינה בלבד">${ICON.note}</button>
        <button class="btnMic rc">${ICON.mic}<span>שירו</span></button>
      </div>
    </div>
@@ -560,19 +568,32 @@ function buildCard(ch,i){
   const roll=makeRoll(el.querySelector(".roll")); roll.setTarget(tl,durOf(ch)+(ch.type==="speech"?.4:.6));
   const card={ch,el,roll,tl};
   el.querySelector(".pl").onclick=()=>togglePlay(card);
+  el.querySelector(".org").onclick=()=>toggleVideo(card);
   el.querySelector(".rc").onclick=()=>toggleRec(card);
-  el.querySelector(".rshare").onclick=()=>share(`🎤 קול קורא: מי מכם מצליח לחקות את "${ch.title}"? ${best!=null?`השיא שלי ${best}. `:""}`, ch.id);
+  el.querySelector(".rshare").onclick=()=>share(`🎤 בּוּל!: מי מכם מצליח לחקות את "${ch.title}"? ${best!=null?`השיא שלי ${best}. `:""}`, ch.id);
   cards.push(card);
 }
 function lyricAt(card,t){ card.el.querySelectorAll(".lyric span").forEach((sp,k)=>{ const n=card.tl[k]; sp.className= t<0?"": (t>=n.t&&t<n.t+n.d)?"on":(t>=n.t+n.d?"done":""); }); }
 
 let busy=null; // {card, kind}
+let openVid=null;
+function closeVideo(){ if(openVid){ openVid.box.remove(); openVid.btn.innerHTML=ICON.yt+"<span>המקור</span>"; openVid=null; } }
+function toggleVideo(card){
+  if(openVid&&openVid.card===card){ closeVideo(); return; }
+  if(busy&&busy.kind!=="play") return; stopPlayback(); closeVideo();
+  const y=card.ch.yt, box=document.createElement("div"); box.className="vid";
+  box.innerHTML=`<iframe src="https://www.youtube.com/embed/${y.id}?start=${y.s}&end=${y.e}&autoplay=1&playsinline=1&rel=0&modestbranding=1" title="המקור: ${card.ch.title}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><button class="x" aria-label="סגירת הסרטון">✕</button>`;
+  box.querySelector(".x").onclick=closeVideo;
+  card.el.querySelector(".stageBox").appendChild(box);
+  const btn=card.el.querySelector(".org"); btn.innerHTML=ICON.stop+"<span>סגירה</span>";
+  openVid={card,box,btn};
+}
 function togglePlay(card){
   const btn=card.el.querySelector(".pl");
   if(busy&&busy.kind==="play"&&busy.card===card){ stopPlayback(); return; }
   if(busy) return;
-  busy={card,kind:"play"}; btn.innerHTML=ICON.stop+"<span>עצירה</span>";
-  const end=()=>{ busy=null; btn.innerHTML=ICON.play+"<span>הקשבה</span>"; card.roll.st.head=-1; card.roll.draw(); lyricAt(card,-1); };
+  closeVideo(); busy={card,kind:"play"}; btn.innerHTML=ICON.stop;
+  const end=()=>{ busy=null; btn.innerHTML=ICON.note; card.roll.st.head=-1; card.roll.draw(); lyricAt(card,-1); };
   const tick=t=>{ card.roll.st.head=t; card.roll.draw(); lyricAt(card,t); };
   card.ch.type==="speech"? playSpeech(card.ch,tick,end) : playMelody(card.ch,tick,end);
 }
@@ -585,6 +606,7 @@ async function toggleRec(card){
   const btn=card.el.querySelector(".rc");
   if(busy&&busy.kind==="rec"&&busy.card===card){ busy.finish(); return; }
   if(busy) { if(busy.kind==="play") stopPlayback(); else return; }
+  closeVideo();
   try{ await getMic(); }catch(e){ toast(micErrorText(e),4500); return; }
   busy={card,kind:"wait"};
   await countdown(card.el);
@@ -624,7 +646,7 @@ function showResult(res,o){
   requestAnimationFrame(()=>{ setTimeout(()=>{ arc.style.strokeDashoffset=326.7*(1-res.total/100);
     $("#meters").querySelectorAll(".bar i").forEach((b,k)=>b.style.width=clamp(res.meters[k][1])+"%");
     const t0=performance.now(); const step=()=>{ const p=Math.min(1,(performance.now()-t0)/900); $("#dialNum").textContent=Math.round(res.total*p); if(p<1) requestAnimationFrame(step); }; step(); },60); });
-  sheetCtx.text=o.shareText||`🎤 קיבלתי ${res.total} על "${o.title}" בקול קורא (${v}). חושבים שתעשו יותר טוב?`;
+  sheetCtx.text=o.shareText||`🎤 קיבלתי ${res.total} על "${o.title}" בבּוּל! (${v}). חושבים שתעשו יותר טוב?`;
 }
 function closeSheet(){ $("#sheet").classList.remove("open"); }
 $("#sAgain").onclick=()=>{ closeSheet(); sheetCtx&&sheetCtx.again&&setTimeout(sheetCtx.again,250); };
@@ -637,7 +659,7 @@ $("#sheet").addEventListener("touchend",e=>{ if(sy!=null&&e.changedTouches[0].cl
 function pageUrl(id){ const u=location.href.split("#")[0]; return id? u+"#c-"+id : u; }
 async function share(text,id){
   const url=pageUrl(id);
-  if(navigator.share){ try{ await navigator.share({title:"קול קורא",text,url}); return; }catch(e){ if(e&&e.name==="AbortError") return; } }
+  if(navigator.share){ try{ await navigator.share({title:"בּוּל!",text,url}); return; }catch(e){ if(e&&e.name==="AbortError") return; } }
   window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener");
 }
 
@@ -687,7 +709,7 @@ async function recPlayer(){
     if(!res){ toast("לא שמעתי מספיק. התקרבו למיקרופון ונסו שוב.",3500); return; }
     const name=($("#plName").value||"").trim()||`מתחרה ${party.players.length+1}`; const src=($("#srcName").value||"").trim()||"המקור";
     party.players.push({name,...res}); renderBoard();
-    showResult(res,{title:`${src}`, id:null, shareText:`🎤 ${name} קיבל ${res.total} בחיקוי של ${src} בקול קורא!`, again:()=>recPlayer(), nextLabel:"השחקן הבא",
+    showResult(res,{title:`${src}`, id:null, shareText:`🎤 ${name} קיבל ${res.total} בחיקוי של ${src} בבּוּל!!`, again:()=>recPlayer(), nextLabel:"השחקן הבא",
       next:()=>{ $("#plName").value=""; $("#plName").focus(); }});
   };
 }
@@ -699,10 +721,12 @@ function renderBoard(){
 }
 
 /* ============ TABS / BOOT ============ */
-function setTab(p){ $("#tabCh").setAttribute("aria-selected",!p); $("#tabParty").setAttribute("aria-selected",p); $("#feed").hidden=p; $("#party").hidden=!p; stopPlayback(); if(p) setTimeout(()=>{party.roll1.fit(); party.roll2.fit();},30); }
+function setTab(p){ closeVideo(); $("#tabCh").setAttribute("aria-selected",!p); $("#tabParty").setAttribute("aria-selected",p); $("#feed").hidden=p; $("#party").hidden=!p; stopPlayback(); if(p) setTimeout(()=>{party.roll1.fit(); party.roll2.fit();},30); }
 $("#tabCh").onclick=()=>setTab(false); $("#tabParty").onclick=()=>setTab(true);
 
 buildIntro(); CH.forEach(buildCard); initParty();
+const vidIO=new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting&&openVid&&openVid.card.el===e.target) closeVideo(); }),{threshold:.3});
+cards.forEach(c=>vidIO.observe(c.el));
 if(location.hash==="#party") setTab(true);
 else if(location.hash.startsWith("#c-")){ const el=document.getElementById(location.hash.slice(1)); if(el) setTimeout(()=>el.scrollIntoView(),50); }
 if(window.speechSynthesis) speechSynthesis.getVoices();

@@ -55,7 +55,8 @@ h2.title{font-family:var(--display);font-weight:400;font-size:clamp(26px,7.5vw,4
 .vid{position:relative;width:100%;aspect-ratio:16/9;max-height:25vh;border-radius:14px;overflow:hidden;background:#000 center/cover no-repeat;margin-bottom:10px}
 .vid iframe,.vid>div{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 .stageBox .roll{height:104px}
-.acc{font-size:13px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.1);white-space:nowrap}
+.hint{font-size:13px;color:var(--muted);text-align:center}
+.phase{position:absolute;top:8px;right:8px;z-index:4;background:rgba(0,0,0,.65);color:#fff;font-weight:800;font-size:14px;padding:5px 10px;border-radius:999px;pointer-events:none}
 .tune{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;background:rgba(0,0,0,.35);padding:8px;border-radius:12px;direction:ltr}
 .tune button{padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.14);font-weight:700}
 @media (max-height:760px){ .tip{display:none} }
@@ -229,36 +230,36 @@ h2.title{font-family:var(--display);font-weight:400;font-size:clamp(26px,7.5vw,4
 // notes: [midi|null(rest), beats, syllable]. Syllable ending with a space = word break.
 // yt: s/e = clip start/end in the video (seconds), lead = seconds from clip start to the first sung note, pd = phrase length (sets tempo).
 const CH = [
- {id:"letitgo", cat:"דיסני", tint:"#3b2d86", title:"Let It Go", artist:"עלזה · לשבור את הקרח", ltr:true, type:"melody", pd:3.4,
-  notes:[[75,.5,"Let "],[77,.5,"it "],[72,1.5,"go, "],[75,.5,"let "],[77,.5,"it "],[70,2,"go"]],
-  tip:"שתי שורות קצרות, השנייה יורדת נמוך יותר. תנו את זה בביטחון של מלכה.", yt:{id:"kukzShLcZJE",s:57.9,e:62.7,lead:1.28}},
- {id:"snowman", cat:"דיסני", tint:"#2c4f8f", title:"Do You Want to Build a Snowman?", artist:"אנה · לשבור את הקרח", ltr:true, type:"melody", pd:3.3,
-  notes:[[70,.5,"Do "],[70,.5,"you "],[70,.5,"wan"],[67,.5,"na "],[70,.5,"build "],[70,.5,"a "],[75,1,"snow"],[72,1.5,"man?"]],
-  tip:"קול של ילדה קטנה שדופקת על דלת. מתוק ושובב.", yt:{id:"9YwXff-i1fY",s:5.4,e:10.3,lead:1.34}},
- {id:"whitney", cat:"הצליל הבלתי אפשרי", tint:"#7c1f43", title:"I Will Always Love You", artist:"ויטני יוסטון", ltr:true, type:"melody", pd:10.4,
-  notes:[[64,.5,"And "],[73,2,"I "],[71,.5,"will "],[69,.5,"al"],[71,.5,"ways "],[73,1.5,"love "],[71,.5,"you"],[69,2,"…"]],
-  tip:"ה-I הארוך הוא הכול. נשימה עמוקה, ולהחזיק.", yt:{id:"tP0zj220CbQ",s:41.6,e:53.8,lead:1.32}},
- {id:"mariah", cat:"הצליל הבלתי אפשרי", tint:"#8a1f6a", title:"צליל השריקה של מריה", artist:"מריה קארי · Emotions", ltr:true, type:"high", targetMidi:91, pd:9,
-  notes:[[76,2.5,"You make me feel so "],[91,6.5,"HIGH!"]],
-  tip:"על ה-HIGH מריה עולה לשריקה. טפסו הכי גבוה שאפשר והחזיקו. סול שישית מקבלת 100.", yt:{id:"70pqzhqJRqk",s:162.6,e:173.0,lead:1.27}},
- {id:"jerusalem", cat:"קלאסיקה ישראלית", tint:"#1f5585", title:"ירושלים של זהב", artist:"נעמי שמר · שולי נתן", bpm:84, type:"melody",
+ {id:"leshachrer", cat:"דיסני בעברית", tint:"#3b2d86", title:"לשחרר", artist:"עלזה · לשבור את הקרח", type:"melody", pd:3.4,
+  notes:[[75,.5,"לְ"],[77,.5,"שַׁחְ"],[72,1.5,"רֵר, "],[75,.5,"לְ"],[77,.5,"שַׁחְ"],[70,2,"רֵר"]],
+  tip:"הפזמון של עלזה. השורה השנייה יורדת נמוך יותר. בביטחון של מלכה.", yt:{id:"FJggxB22LV0",s:57.4,e:64,lead:1.8}},
+ {id:"snowman", cat:"דיסני בעברית", tint:"#2c4f8f", title:"רוצה לבנות איש שלג?", artist:"אנה · לשבור את הקרח", type:"melody", pd:3.3,
+  notes:[[70,1,"רוֹ"],[70,.5,"צָה "],[67,.5,"לִבְ"],[70,.5,"נוֹת "],[70,.5,"אִישׁ "],[75,1,"שֶׁ"],[72,1.5,"לֶג?"]],
+  tip:"קול של ילדה קטנה שדופקת על הדלת של אחותה. מתוק ושובב.", yt:{id:"wt_9h_Nx93Y",s:5,e:11,lead:1.7}},
+ {id:"ofra", cat:"הצליל הבלתי אפשרי", tint:"#8a1f6a", title:"אם ננעלו", artist:"עפרה חזה", type:"high", targetMidi:79, pd:8,
+  notes:[[72,8,"אִם נִנְעֲלוּ…"]],
+  tip:"הסלסול של עפרה בפתיחה. שירו הכי גבוה וארוך שאתם יכולים. סול חמישית מקבלת 100.", yt:{id:"ZRnzTTYk7_Q",s:.6,e:9.6,lead:.67}},
+ {id:"hatikva", cat:"קלאסיקה ישראלית", tint:"#1f4f8a", title:"התקווה", artist:"ההמנון · בביצוע אלי לוין", type:"melody", pd:6.9,
+  notes:[[62,.5,"כֹּל "],[64,.5,"עוֹד "],[65,.5,"בַּ"],[67,.5,"לֵּ"],[69,1,"בָב "],[69,1,"פְּ"],[70,.5,"נִי"],[69,.5,""],[70,.5,"מָה"],[74,.5,""],[69,2,""]],
+  tip:"לאט ובכבוד. השורה הראשונה בלבד.", yt:{id:"mA_EScAi4Lg",s:2.4,e:11,lead:1.3}},
+ {id:"hava", cat:"קלאסיקה ישראלית", tint:"#1f6a7a", title:"הבה נגילה", artist:"בגרסת הטוויסט של צ'אבי צ'קר", type:"melody", pd:6.6,
+  notes:[[62,1,"הָ"],[62,1.5,"בָה "],[66,.5,"נָ"],[63,.5,"גִי"],[62,.5,"לָה, "],[66,1,"הָ"],[66,1.5,"בָה "],[69,.5,"נָ"],[67,.5,"גִי"],[66,.5,"לָה, "],[67,1,"הָ"],[67,1.5,"בָה "],[70,.5,"נָ"],[69,.5,"גִי"],[67,.5,"לָה "],[66,1,"וְ"],[63,.25,"נִשְׂ"],[62,.25,""],[63,.5,"מְ"],[62,2,"חָה"]],
+  tip:"שלוש פעמים הבה נגילה, וכל פעם מתחילים גבוה יותר.", yt:{id:"McKBRGeU1hM",s:2.8,e:11.4,lead:1.43}},
+ {id:"jerusalem", cat:"קלאסיקה ישראלית", tint:"#1f5585", title:"ירושלים של זהב", artist:"נעמי שמר · שולי נתן", bpm:84, type:"melody", wRhythm:.4,
   notes:[[64,.5,"יְ"],[69,.5,"רוּ"],[69,.5,"שָׁ"],[72,1,"לַ"],[71,.5,"יִם "],[69,.5,"שֶׁל "],[68,.5,"זָ"],[69,1.5,"הָב"]],
-  tip:"הפזמון. לאט, חגיגי, עם כל הלב.", yt:{id:"J54pEaEBM4M",s:43,e:58,lead:1.5}},
- {id:"toy", cat:"אירוויזיון", tint:"#6c2a92", title:"Toy", artist:"נטע · ליסבון 2018", ltr:true, type:"melody", wRhythm:.45, pd:5.5,
-  notes:[[76,.5,"I'm "],[76,.5,"not "],[74,.5,"your "],[71,1,"toy "],[null,2.5,""],[76,.5,"you "],[76,.5,"stu"],[74,.5,"pid "],[71,1,"boy"]],
-  tip:"הקהל עונה ״not your toy״ באמצע. אתם רק השורה של נטע. גישה, גישה, גישה.", yt:{id:"PctzQsrVkPs",s:57.5,e:64.4,lead:1.24}},
- {id:"simpsons", cat:"פתיחים וג'ינגלים", tint:"#8a6512", title:"The Simpsons", artist:"שיר הפתיחה · דני אלפמן", bpm:172, type:"melody",
-  notes:[[72,1.5,"דָּה "],[76,1,"דָּה "],[78,1,"דָּה "],[81,.5,"דָּה "],[79,1.5,"דָּה "],[76,1,"דָּה "],[72,1,"דָּה "],[69,.5,"דָּה "],[66,.5,"דָּה "],[66,.5,"דָּה "],[66,.5,"דָּה "],[67,1.5,"דָּם"]],
-  tip:"מזמזמים את המנגינה של הפתיחה עם ״דה״. מהר וקופצני.", yt:{id:"Fttst9dG6Ko",s:2.5,e:10,lead:1}},
- {id:"gandalf", cat:"ציטוטים מסרטים", tint:"#33464d", title:"You Shall Not Pass!", artist:"גנדלף · שר הטבעות", ltr:true, type:"speech", targetMidi:50,
-  syl:[[0,.32,"You "],[.36,.34,"shall "],[.76,.4,"not "],[1.25,1.0,"PASS!"]],
-  tip:"לא שרים, צועקים. קול נמוך, עמוק, והכי חזק שאפשר על PASS.", yt:{id:"3xYXUeSmb-Y",s:0,e:8,lead:0}},
- {id:"nessun", cat:"אופרה", tint:"#7a1616", title:"Nessun Dorma", artist:"פברוטי · טורנדוט", ltr:true, bpm:58, type:"melody", wVoice:.35,
-  notes:[[69,.75,"Vin"],[71,3,"ce"],[69,2,"rò!"]],
-  tip:"שלוש הברות, והאמצעית מוחזקת ארוך וגבוה. ידיים פתוחות לצדדים.", yt:{id:"cWc7vYjgnTs",s:138,e:160,lead:2}},
- {id:"yonatan", cat:"שירי ילדים", tint:"#1d6b4c", title:"יונתן הקטן", artist:"שיר ילדים", bpm:120, type:"melody",
+  tip:"הפזמון. חכו לשולי נתן ושירו איתה.", yt:{id:"J54pEaEBM4M",s:40,e:60,lead:null}},
+ {id:"maoz", cat:"שירי חגים", tint:"#7a5212", title:"מעוז צור", artist:"דליה עמיהוד ומקהלת ילדים", bpm:100, type:"melody",
+  notes:[[60,1,"מָ"],[55,1,"עוֹז "],[60,1,"צוּר "],[65,1,"יְ"],[64,1,"שׁוּ"],[62,1,"עָ"],[60,1.5,"תִי"]],
+  tip:"השורה הראשונה. חכו שהמקהלה מתחילה, ושירו איתה.", yt:{id:"u7IMKChJAW4",s:0,e:16,lead:null}},
+ {id:"zumgali", cat:"שירי מדורה", tint:"#8a3a12", title:"זום גלי גלי", artist:"שיר עם", bpm:144, type:"melody",
+  notes:[[67,1,"זוּם "],[67,.5,"גָּ"],[69,.5,"לִי "],[70,.5,"גָּ"],[69,.5,"לִי "],[70,.5,"גָּ"],[69,.5,"לִי, "],[67,1,"זוּם "],[67,.5,"גָּ"],[67,.5,"לִי "],[62,1,"גָּ"],[67,1,"לִי"]],
+  tip:"קצבי ושמח. מחאו כפיים בראש.", yt:{id:"3nqq6c3Ch2Q",s:0,e:14,lead:null}},
+ {id:"yonatan", cat:"שירי ילדים", tint:"#1d6b4c", title:"יונתן הקטן", artist:"ילדות ישראלית", bpm:120, type:"melody",
   notes:[[67,1,"יוֹ"],[64,1,"נָ"],[64,2,"תָן "],[65,1,"הַ"],[62,1,"קָּ"],[62,2,"טָן "],[60,1,"רָץ "],[62,1,"בַּ"],[64,1,"בֹּ"],[65,1,"קֶר "],[67,1,"אֶל "],[67,1,"הַ"],[67,2,"גַּן"]],
-  tip:"קל? בדיוק בגלל זה כולם בודקים מי מזייף.", yt:{id:"QrkDbNul0U8",s:0,e:12,lead:1}},
+  tip:"קל? בדיוק בגלל זה כולם בודקים מי מזייף.", yt:{id:"QrkDbNul0U8",s:0,e:14,lead:null}},
+ {id:"birthday", cat:"שירי ילדים", tint:"#8a1f4a", title:"יום הולדת שמח", artist:"שיר יום הולדת", bpm:90, type:"melody",
+  notes:[[62,.75,"יוֹם "],[62,.25,"הֻ"],[64,1,"לֶּ"],[62,1,"דֶת "],[67,1,"שָׂ"],[66,2,"מֵחַ, "],[62,.75,"יוֹם "],[62,.25,"הֻ"],[64,1,"לֶּ"],[62,1,"דֶת "],[69,1,"שָׂ"],[67,2,"מֵחַ"]],
+  tip:"השיר שכולם מכירים. מי שר הכי מדויק?", yt:{id:"XtOqnhQbiO8",s:0,e:16,lead:null}},
 ];
 const PARTY_IDEAS = ["״הלו?״ בקול של סבתא","מנגינה של פרסומת","״יאללה ביי״ דרמטי","פזמון של אירוויזיון","צחוק של נבל מדיסני"];
 
@@ -409,7 +410,7 @@ function tuningScore(V){
   let best=9; for(let c=0;c<1;c+=.05){ let s=0; ms.forEach(m=>{const f=(m-c)-Math.round(m-c); s+=Math.abs(f);}); best=Math.min(best,s/ms.length); }
   return clamp(100*(1-(best-.06)/.24));
 }
-const melodyFromCost = c => clamp(100*Math.exp(-Math.max(0,c-.3)/1.4));
+const melodyFromCost = c => clamp(100*Math.exp(-Math.max(0,c-.3)/1.2));
 const rhythmFrom = (ratio,dev) => clamp(100*Math.exp(-(1.5*Math.abs(Math.log(ratio))+5*dev)));
 
 function targetFrames(ch){ const tl=sung(timeline(ch)); const fr=[]; tl.forEach(n=>{ for(let t=n.t; t<n.t+n.d-.04; t+=HOP/SR) fr.push({t,m:n.m}); }); return fr; }
@@ -421,12 +422,12 @@ function scoreChallenge(ch, A){
   const U=down(A.voiced,2), T=down(targetFrames(ch),2);
   const r=bestKeyDTW(U,T);
   const tune=tuningScore(A.voiced);
-  const melody=clamp(.72*melodyFromCost(r.cost)+.28*tune);
+  const melody=clamp(.85*melodyFromCost(r.cost)+.15*tune);
   const ratio=Math.max(.05,(A.v1-A.v0))/durOf(ch);
   const rhythm=rhythmFrom(ratio,r.dev);
   const reg=Math.abs(median(A.voiced.map(f=>f.m))-median(T.map(f=>f.m)));
   const voice=clamp(100*Math.exp(-reg/9));
-  const wR=ch.wRhythm||.3, wV=ch.wVoice||.22, wM=1-wR-wV;
+  const wR=ch.wRhythm||.28, wV=ch.wVoice||.2, wM=1-wR-wV;
   return { total:Math.round(wM*melody+wR*rhythm+wV*voice), meters:[["מנגינה",melody],["קצב",rhythm],["דמיון לקול",voice]],
     note: reg>8? "המנגינה נשמעה, אבל באוקטבה אחרת מהמקור. זה עולה בנקודות דמיון קול." : "" };
 }
@@ -509,8 +510,8 @@ function buildIntro(){
   const s=document.createElement("section"); s.className="card intro"; s.style.setProperty("--tint","#5a1a4a");
   s.innerHTML=`<div class="beam"></div><div class="cardInner">
     <h1>כמה אתם<br><em>נשמעים כמוהם?</em></h1>
-    <p>עשרה קטעים מפורסמים. שומעים, שרים למיקרופון, והמשחק משווה את הקול שלכם למקור.</p>
-    <div class="steps"><div><b>1</b>לוחצים ״הקטע״ ושומעים את המקור</div><div><b>2</b>לוחצים ״שירו עם המקור״ ושרים יחד איתו</div><div><b>3</b>מקבלים ציון: מנגינה, קצב ודמיון קול</div></div>
+    <p>עשרה שירים בעברית. שומעים את המקור, שרים יחד איתו, והמשחק משווה את השירה שלכם למקור.</p>
+    <div class="steps"><div><b>1</b>לוחצים ״שירו עם המקור״ ושומעים את הקטע</div><div><b>2</b>3, 2, 1, ושרים יחד עם המקור</div><div><b>3</b>מקבלים ציון: מנגינה, קצב ודמיון קול</div></div>
     <button class="cta" id="startBtn">יאללה, מתחילים</button>
     <p class="tip">צריך לאשר מיקרופון פעם אחת. ההקלטות לא נשמרות ולא נשלחות לשום מקום.</p></div>
     <div class="swipe">החליקו למעלה ↑</div>`;
@@ -520,8 +521,7 @@ function buildIntro(){
 const TUNE = location.hash==="#tune";
 const tuned = store.get("tune",{});
 function clipOf(ch){ const o=tuned[ch.id]||{}; return {s:o.s??ch.yt.s, e:o.e??ch.yt.e, lead:o.lead??ch.yt.lead}; }
-const ACC=[[30,"ליווי: חלש"],[70,"ליווי: חזק"],[0,"ליווי: כבוי"]];
-let accIdx=store.get("acc",0); if(!(accIdx>=0&&accIdx<ACC.length)) accIdx=0;
+const BACKING=35; // backing volume while singing (YouTube volume, 0-100)
 
 function buildCard(ch,i){
   const el=document.createElement("section"); el.className="card"; el.id="c-"+ch.id; el.style.setProperty("--tint",ch.tint);
@@ -542,21 +542,18 @@ function buildCard(ch,i){
      <div class="lyric" ${ch.ltr?'dir="ltr" style="text-align:right"':''}>${lyr}</div>
      <div class="tip">${ch.tip}</div>
      <div class="controls">
-       <button class="btnPlay org">${ICON.play}<span>הקטע</span></button>
        <button class="btnMic rc">${ICON.mic}<span>שירו עם המקור</span></button>
      </div>
-     <div class="controls" style="justify-content:space-between"><button class="acc">${ACC[accIdx][1]}</button><span class="tip" style="display:block">עם אוזניות זה עובד הכי טוב</span></div>
+     <div class="hint">קודם שומעים את הקטע, אחר כך 3, 2, 1 ושרים יחד עם המקור.</div>
      ${TUNE?'<div class="tune"></div>':''}
    </div>
    ${i<CH.length-1?'<div class="swipe">החליקו לשיר הבא ↑</div>':''}`;
   feed.appendChild(el);
   const roll=makeRoll(el.querySelector(".roll"));
   const card={ch,el,roll,tl,player:null,ready:false};
-  card.layout=()=>{ const c=clipOf(ch); roll.setTarget(tl,Math.max(durOf(ch)+.4,c.e-c.s-c.lead)); };
+  card.layout=()=>{ const c=clipOf(ch); roll.setTarget(tl,c.lead==null? durOf(ch)+.6 : Math.max(durOf(ch)+.4,c.e-c.s-c.lead)); };
   card.layout();
-  el.querySelector(".org").onclick=()=>toggleListen(card);
   el.querySelector(".rc").onclick=()=>toggleRec(card);
-  el.querySelector(".acc").onclick=()=>{ accIdx=(accIdx+1)%ACC.length; store.set("acc",accIdx); document.querySelectorAll(".acc").forEach(b=>b.textContent=ACC[accIdx][1]); };
   el.querySelector(".rshare").onclick=()=>share(`🎤 בּוּל!: מי מכם מצליח לשיר כמו "${ch.title}"? ${best!=null?`השיא שלי ${best}. `:""}`, ch.id);
   if(TUNE) renderTune(card);
   cards.push(card);
@@ -601,52 +598,65 @@ function endClip(){ if(!clip) return; const c=clip; clip=null; cancelAnimationFr
 function stopClip(){ if(clip) endClip(); }
 
 let busy=null; // {card, kind}
-function toggleListen(card){
-  const btn=card.el.querySelector(".org");
-  if(busy&&busy.kind==="listen"&&busy.card===card){ stopClip(); return; }
-  if(busy) return; stopPlayback();
-  const c=clipOf(card.ch);
-  const ok=playClip(card,{vol:100,
-    onTick:t=>{ card.roll.st.head=t-c.lead; card.roll.draw(); lyricAt(card,t-c.lead); },
-    onEnd:()=>{ busy=null; btn.innerHTML=ICON.play+"<span>הקטע</span>"; card.roll.st.head=-1; card.roll.draw(); lyricAt(card,-1); }});
-  if(ok){ busy={card,kind:"listen"}; btn.innerHTML=ICON.stop+"<span>עצירה</span>"; }
-}
-async function toggleRec(card){
+function setPhase(card,txt){ let b=card.el.querySelector(".phase"); if(!txt){ b&&b.remove(); return; }
+  if(!b){ b=document.createElement("div"); b.className="phase"; card.el.querySelector(".vid").appendChild(b); } b.textContent=txt; }
+function clipRun(card,vol,{onStart,onTick}={}){ // resolves true when the clip played to its end
+  return new Promise(res=>{ const ok=playClip(card,{vol,onStart,onTick,onEnd:()=>res(true)}); if(!ok) res(false); }); }
+
+async function toggleRec(card,{skipListen=false}={}){
   const btn=card.el.querySelector(".rc"), label=t=>btn.querySelector("span").textContent=t;
-  if(busy&&busy.kind==="rec"&&busy.card===card){ busy.finish(); return; }
-  if(busy){ if(busy.kind==="listen") stopClip(); else return; }
+  if(busy&&busy.card===card&&busy.cancel){ busy.cancel(); return; }
+  if(busy) return;
   if(!micStream||!micStream.active){
     try{ await getMic(); }catch(e){ toast(micErrorText(e),4500); return; }
-    toast("המיקרופון מוכן. לחצו שוב ותשירו יחד עם המקור",3500); return;
+    toast("המיקרופון מוכן. לחצו שוב כדי להתחיל",3500); return;
   }
   audioCtx(); stopPlayback();
-  const c=clipOf(card.ch), tm=median(sung(card.tl).map(n=>n.m));
-  const live=[]; card.roll.st.live=live; card.roll.st.offset=0;
-  let rec=null, done=false;
-  btn.classList.add("rec"); btn.innerHTML=ICON.stop+"<span>סיום</span>";
-  const finish=()=>{ if(done) return; done=true; stopClip();
-    btn.classList.remove("rec"); btn.innerHTML=ICON.mic+"<span>שירו עם המקור</span>"; card.roll.st.head=-1; lyricAt(card,-1); busy=null;
-    if(!rec){ card.roll.draw(); return; }
-    const data=rec.stop(); btn.disabled=true; label("מנתח…");
-    setTimeout(()=>{ let res=null; try{ const A=analyze(data, card.ch.type==="high"?2100:1100);
-        card.roll.st.live=A.frames.map(f=>({t:f.t-c.lead, m:f.m})); card.roll.st.offset= card.ch.type==="melody"&&A.voiced.length? Math.round(median(A.voiced.map(f=>f.m))-tm):0; card.roll.draw();
-        res=scoreChallenge(card.ch,A); }catch(e){ console.error(e); }
-      btn.disabled=false; label("שירו עם המקור");
-      if(!res){ toast("לא שמעתי מספיק. התקרבו למיקרופון ושירו חזק יותר.",3500); return; }
-      const prev=store.get("best_"+card.ch.id,null); const isBest=prev==null||res.total>prev;
-      if(isBest){ store.set("best_"+card.ch.id,res.total); card.el.querySelector(".best").textContent=res.total; }
-      showResult(res,{title:card.ch.title,id:card.ch.id,isBest,prev,again:()=>toggleRec(card),next:()=>{ const nx=cards[cards.indexOf(card)+1]; if(nx) nx.el.scrollIntoView({behavior:"smooth"}); else toast("סיימתם את כל העשרה! נסו את מצב המסיבה."); }});
-    },30);
-  };
-  busy={card,kind:"rec",finish};
-  const ok=playClip(card,{vol:ACC[accIdx][0],
-    onStart:()=>{ rec=startRecorder((t,m)=>{ live.push({t:t-c.lead,m}); const vm=live.filter(p=>p.m!=null).map(p=>p.m);
-      if(vm.length>3 && card.ch.type==="melody") card.roll.st.offset=Math.round(median(vm)-tm); card.roll.draw(); }); },
-    onTick:t=>{ card.roll.st.head=t-c.lead; card.roll.draw(); lyricAt(card,t-c.lead); },
-    onEnd:()=>setTimeout(finish,500)});
-  if(!ok){ done=true; busy=null; btn.classList.remove("rec"); btn.innerHTML=ICON.mic+"<span>שירו עם המקור</span>"; }
-}
+  const c=clipOf(card.ch), tm=median(sung(card.tl).map(n=>n.m)), hasLead=c.lead!=null;
+  let cancelled=false, rec=null;
+  const reset=()=>{ btn.classList.remove("rec"); btn.innerHTML=ICON.mic+"<span>שירו עם המקור</span>"; card.roll.st.head=-1; lyricAt(card,-1); setPhase(card,null); busy=null; };
+  busy={card,cancel:()=>{ cancelled=true; stopClip(); if(rec){ try{rec.stop();}catch(e){} rec=null; } reset(); }};
+  btn.innerHTML=ICON.stop+"<span>עצירה</span>";
+  const tick=t=>{ if(!hasLead) return; card.roll.st.head=t-c.lead; card.roll.draw(); lyricAt(card,t-c.lead); };
 
+  // 1) listen once at full volume (and measure how loud the original sounds in the mic)
+  let leak=0;
+  if(!skipListen){
+    setPhase(card,"🎧 מקשיבים");
+    let probe=null;
+    const played=await clipRun(card,100,{onStart:()=>{ probe=startRecorder(); },onTick:tick});
+    if(probe){ const d=probe.stop(); const x=decimate(d.pcm,d.rate); const rs=[]; for(let o=0;o+1024<=x.length;o+=320) rs.push(rms(x,o,1024)); leak=median(rs); }
+    if(cancelled) return; if(!played){ reset(); return; }
+    card.roll.st.head=-1; lyricAt(card,-1); card.roll.draw();
+  }
+  // 2) 3-2-1
+  setPhase(card,null); await countdown(card.el); if(cancelled) return;
+  // 3) sing along with quiet backing
+  setPhase(card,"🎤 שרים!"); btn.classList.add("rec"); btn.innerHTML=ICON.stop+"<span>סיום</span>";
+  const live=[]; card.roll.st.live=live; card.roll.st.offset=0; let firstV=null;
+  const played=await clipRun(card,BACKING,{
+    onStart:()=>{ rec=startRecorder((t,m)=>{ if(m!=null&&firstV==null) firstV=t; const x0=hasLead?c.lead:(firstV??t);
+      live.push({t:t-x0,m});
+      const vm=live.filter(p=>p.m!=null).map(p=>p.m); if(vm.length>3&&card.ch.type==="melody") card.roll.st.offset=Math.round(median(vm)-tm); card.roll.draw(); }); },
+    onTick:tick});
+  if(cancelled) return;
+  if(!rec){ reset(); return; }
+  const data=rec.stop(); rec=null; reset();
+  btn.disabled=true; label("מנתח…");
+  setTimeout(()=>{ let res=null, quiet=false; try{ const A=analyze(data, card.ch.type==="high"?2100:1100);
+      // guard: if the mic only heard the backing track, don't score it
+      const act=A.frames.map(f=>f.r).sort((a,b)=>a-b); const loud=act[Math.floor(act.length*.8)]||0;
+      if(leak>.004 && loud < leak*(BACKING/100)*2.2) quiet=true;
+      const x0=hasLead?c.lead:A.v0;
+      card.roll.st.live=A.frames.map(f=>({t:f.t-x0, m:f.m})); card.roll.st.offset= card.ch.type==="melody"&&A.voiced.length? Math.round(median(A.voiced.map(f=>f.m))-tm):0; card.roll.draw();
+      if(!quiet) res=scoreChallenge(card.ch,A); }catch(e){ console.error(e); }
+    btn.disabled=false; label("שירו עם המקור");
+    if(!res){ toast(quiet?"שמעתי רק את המקור. שירו חזק יותר, קרוב למיקרופון.":"לא שמעתי מספיק. התקרבו למיקרופון ושירו חזק יותר.",3800); return; }
+    const prev=store.get("best_"+card.ch.id,null); const isBest=prev==null||res.total>prev;
+    if(isBest){ store.set("best_"+card.ch.id,res.total); card.el.querySelector(".best").textContent=res.total; }
+    showResult(res,{title:card.ch.title,id:card.ch.id,isBest,prev,again:()=>toggleRec(card,{skipListen:true}),next:()=>{ const nx=cards[cards.indexOf(card)+1]; if(nx) nx.el.scrollIntoView({behavior:"smooth"}); else toast("סיימתם את כל העשרה! נסו את מצב המסיבה."); }});
+  },30);
+}
 async function countdown(host){
   const d=document.createElement("div"); d.className="countdown"; host.appendChild(d);
   for(const n of ["3","2","1"]){ d.textContent=n; await new Promise(r=>setTimeout(r,650)); }
@@ -749,17 +759,17 @@ function renderBoard(){
 }
 
 /* ============ TABS / BOOT ============ */
-function setTab(p){ stopClip(); $("#tabCh").setAttribute("aria-selected",!p); $("#tabParty").setAttribute("aria-selected",p); $("#feed").hidden=p; $("#party").hidden=!p; stopPlayback(); if(p) setTimeout(()=>{party.roll1.fit(); party.roll2.fit();},30); }
+function setTab(p){ if(busy&&busy.cancel) busy.cancel(); stopClip(); $("#tabCh").setAttribute("aria-selected",!p); $("#tabParty").setAttribute("aria-selected",p); $("#feed").hidden=p; $("#party").hidden=!p; stopPlayback(); if(p) setTimeout(()=>{party.roll1.fit(); party.roll2.fit();},30); }
 $("#tabCh").onclick=()=>setTab(false); $("#tabParty").onclick=()=>setTab(true);
 
 buildIntro(); CH.forEach(buildCard); initParty();
 const vidIO=new IntersectionObserver(es=>es.forEach(e=>{ const card=cards.find(c=>c.el===e.target); if(!card) return;
-  if(e.isIntersecting) ensurePlayer(card); else { if(clip&&clip.card===card){ if(busy&&busy.card===card&&busy.finish) busy.finish(); else stopClip(); } dropPlayer(card); } }),{threshold:.5});
+  if(e.isIntersecting) ensurePlayer(card); else { if(busy&&busy.card===card&&busy.cancel) busy.cancel(); else if(clip&&clip.card===card) stopClip(); dropPlayer(card); } }),{threshold:.5});
 cards.forEach(c=>vidIO.observe(c.el));
 if(location.hash==="#party") setTab(true);
 else if(location.hash.startsWith("#c-")){ const el=document.getElementById(location.hash.slice(1)); if(el) setTimeout(()=>el.scrollIntoView(),50); }
 // expose for testing
-window.__kk={analyze,scoreChallenge,scoreParty,CH,targetFrames,timeline,showResult};
+window.__kk={analyze,scoreChallenge,scoreParty,CH,targetFrames,timeline,showResult,cards};
 </script>
 </body>
 </html>
